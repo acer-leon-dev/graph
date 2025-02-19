@@ -1,15 +1,16 @@
-project "Core"
+project "Graph"
    kind "StaticLib"
    language "C++"
-   cppdialect "C++20"
+   cppdialect "C++23"
    targetdir "Binaries/%{cfg.buildcfg}"
    staticruntime "off"
 
-   files { "Source/**.h", "Source/**.cpp" }
+   files { "**.h", "**.hpp", "**.cpp" }
 
    includedirs
    {
-      "Source"
+      "Source",
+      "Include"
    }
 
    targetdir ("../Binaries/" .. OutputDir .. "/%{prj.name}")
