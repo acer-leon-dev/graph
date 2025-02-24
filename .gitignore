@@ -1,6 +1,6 @@
 # Directories
 .vs/
-Binaries/
+bin/
 
 # Files
 *.vcxproj
@@ -11,7 +11,8 @@ Binaries/
 Makefile
 
 # Exclude
-!Vendor/Binaries
+!vendor/bin
+!Vendor/binaries
 
 ###########################################################################
 # C++.gitignore
