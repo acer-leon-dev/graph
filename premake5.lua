@@ -6,8 +6,8 @@ workspace "New Project"
 
 outputdir = "%{cfg.system}-%{cfg.architecture}/%{cfg.buildcfg}"
 
-group "Graphing"
-	include "graphing/premake5.lua"
-group ""
+-- group "Graphing"
+	-- include "graphing/premake5.lua"
+-- group ""
 
 include "app/premake5.lua"

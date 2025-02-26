@@ -1,5 +1,6 @@
 #ifndef A4F2D5F6_5370_484D_A727_F15C776309C6
 #define A4F2D5F6_5370_484D_A727_F15C776309C6
+
 namespace mapping {
 
 // For returning multiple numbers
@@ -33,6 +34,8 @@ double map_to_raster(double value, double scale);
 
 // Converts a normalized domain/coordinate to a given scale
 domain map_to_raster(double x, double scale_x, double y, double scale_y);
+
+domain map_to_raster(domain dom, double scale_x, double scale_y);
 
 } // namespace mapping
 
