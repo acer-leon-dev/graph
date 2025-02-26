@@ -18,6 +18,7 @@ includedirs {
 
 libdirs {
     "./vendor/SFML3/lib/%{cfg.buildcfg}",
+    "./vendor/SFML3/bin/%{cfg.buildcfg}"
 }
 
 SFML_Libs = {
@@ -43,31 +44,37 @@ SFML_Dependency_Libs = {
     "vorbisfile"
 }
 
-filter "configurations:Debug {
-    for i, v in ipairs(SFML_Libs) do SFML_Libs[i] = v .. "-d" end
-    for i, v in ipairs(SFML_Dependency_Libs) do SFML_Libs[i] = v .. "d" end
-}
+if "%{cfg.buildcfg}" == "Debug" then
+    for i,v in ipairs(SFML_Libs) do SFML_Libs[i] = v .. "-d" end
+    for i,v in ipairs(SFML_Dependency_Libs) do SFML_Libs[i] = v .. "d" end
+end
     
 links {
-        table.unpack(SFML_Libs),
-        table.unpack(SFML_Dependency_Libs)
-    -- "FLACd",
-    -- "freetyped",
-    -- "oggd",
-    -- "sfml-audio-d",
-    -- "sfml-audio-s-d",
-    -- "sfml-graphics-d",
-    -- "sfml-graphics-s-d",
-    -- "sfml-main-s-d",
-    -- "sfml-network-d",
-    -- "sfml-network-s-d",
-    -- "sfml-system-d",
-    -- "sfml-system-s-d",
-    -- "sfml-window-d",
-    -- "sfml-window-s-d",
-    -- "vorbisd",
-    -- "vorbisencd",
-    -- "vorbisfiled",
+    -- table.unpack(SFML_Libs),
+    -- table.unpack(SFML_Dependency_Libs),
+    "FLACd",
+    "freetyped",
+    "oggd",
+    "vorbisd",
+    "vorbisencd",
+    "vorbisfiled",
+    "sfml-audio-d",
+    "sfml-audio-s-d",
+    "sfml-graphics-d",
+    "sfml-graphics-s-d",
+    "sfml-main-s-d",
+    "sfml-network-d",
+    "sfml-network-s-d",
+    "sfml-system-d",
+    "sfml-system-s-d",
+    "sfml-window-d",
+    "sfml-window-s-d",
+
+    "sfml-audio-d-3.dll",
+    "sfml-graphics-d-3.dll",
+    "sfml-network-d-3.dll",
+    "sfml-system-d-3.dll",
+    "sfml-window-d-3.dll"
 }
 
 targetdir ("../bin/" .. outputdir .. "/%{prj.name}")

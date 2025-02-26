@@ -12,9 +12,13 @@
 #include "math.hpp"
 #include "mapping.hpp"
 
+constexpr int SCREEN_WIDTH = 1600;
+constexpr int SCREEN_HEIGHT = 900;
+constexpr int SCREEN_WH [2] = {SCREEN_WIDTH, SCREEN_HEIGHT};
+
 // May return NaN
-math::number example_function(math::number x) {
-    return std::pow(math::constant::e, x); 
+math::number exampleFunction(math::number x) {
+    return std::cos(x); 
 }
  
 sf::Vector2f mapPointToScreen(const sf::Vector2f& point, const sf::Vector2f& domain, const sf::Vector2f& range, float width, float height) {
@@ -33,7 +37,7 @@ std::vector<sf::Vector2f> mapGraphToScreenAndGetData(math::Graph& g) {
             static_cast<sf::Vector2f>(p), 
             static_cast<sf::Vector2f>(g.get_domain()), 
             static_cast<sf::Vector2f>(g.get_range()),
-            800, 600
+            SCREEN_WIDTH, SCREEN_HEIGHT
         ));
     }
     return std::move(res);
@@ -67,7 +71,7 @@ void drawLine(sf::RenderWindow &window, sf::Vector2i point1, sf::Vector2i point2
     while (true) {
         sf::RectangleShape rect(sf::Vector2f(lineWidth, lineWidth));
         rect.setFillColor(lineColor);
-        rect.setPosition({(float)x0, (float)y0});
+        rect.setPosition({static_cast<float>(x0), static_cast<float>(y0)});
         window.draw(rect);
         if (x0 == x1 && y0 == y1) {
             break;
@@ -89,15 +93,15 @@ void drawLine(sf::RenderWindow &window, sf::Vector2i point1, sf::Vector2i point2
 void drawPointsSequence(const std::vector<sf::Vector2f>& points, sf::RenderWindow &window) {
     int right = 1;
     for (int left = 0; left < points.size() - 1; left++) {
-        if (std::isnan(points[right].y)) {
-            right++;
-            continue;
-        }
+        // if (std::isnan(points[right].y)) {
+        //     right++;
+        //     continue;
+        // }
 
         drawLine(window, 
             static_cast<sf::Vector2i>(points[left]), 
             static_cast<sf::Vector2i>(points[right]),
-            3, sf::Color(0x4452f2));
+            5, sf::Color(0x4452f2));
         right++;
     }
 }
@@ -106,9 +110,9 @@ void drawPointsSequence(const std::vector<sf::Vector2f>& points, sf::RenderWindo
 int main(int argc, char* argv[])
 {
     // Create the main window
-    sf::RenderWindow window(sf::VideoMode({800, 600}), "Graphing App");
+    sf::RenderWindow window(sf::VideoMode({SCREEN_WIDTH, SCREEN_HEIGHT}), "Graphing App");
 
-    math::Graph graph{{-2 * math::constant::pi, 2 * math::constant::pi}, 500, example_function};
+    math::Graph graph{{-math::constant::pi, math::constant::pi}, 500, exampleFunction};
     auto newPoints = mapGraphToScreenAndGetData(graph);
 
     while (window.isOpen()) {
