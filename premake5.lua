@@ -1,13 +1,14 @@
--- premake5.lua
-workspace "New Project"
-   architecture "x64"
-   configurations { "Debug", "Release", "Dist" }
-   startproject "App"
+include "premake/sfml.lua"
 
-outputdir = "%{cfg.system}-%{cfg.architecture}/%{cfg.buildcfg}"
+workspace "Graph"
+   architecture "x86_64"
+   configurations { "Debug", "Release" }
 
--- group "Graphing"
-	-- include "graphing/premake5.lua"
--- group ""
+outputdir = "%{cfg.system}-%{cfg.architecture}-%{cfg.buildcfg}"
 
-include "app/premake5.lua"
+IncludeDir = {}
+IncludeDir["SFML"] = "%{wks.location}/Graphs/src/vendor/SFML3/include"
+
+group "Graphs"
+   include "Graphs"
+group ""
