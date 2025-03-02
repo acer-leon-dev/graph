@@ -12,6 +12,7 @@
 #include "math.hpp"
 #include "mapping.hpp"
 #include "lines.hpp"
+#include "Timer.hpp"
 
 struct SCREEN
 {
@@ -19,7 +20,7 @@ struct SCREEN
     static inline constexpr int HEIGHT = 900;
     static inline constexpr sf::Vector2f SIZE{WIDTH, HEIGHT};
     static inline constexpr int FPS = 60;
-    static inline constexpr float TICKPERFRAME = 1000 / FPS;
+    static inline constexpr float TICK = 1.0f / FPS;
 };
  
 sf::Vector2f mapPointToScreen(const sf::Vector2f& point, const sf::Vector2f& domain, const sf::Vector2f& range, float width, float height)
@@ -56,6 +57,7 @@ int main(int argc, char* argv[])
 {
     // Create the main window
     sf::RenderWindow window(sf::VideoMode({SCREEN::WIDTH, SCREEN::HEIGHT}), "Graphs");
+    FrameTimer timer;
 
     // Create graph object
     math::number low = -2 * math::constant::pi;
@@ -82,5 +84,6 @@ int main(int argc, char* argv[])
 
         window.display();
         
+        timer.tick(SCREEN::TICK);
     }
 }

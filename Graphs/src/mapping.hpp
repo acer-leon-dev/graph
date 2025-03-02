@@ -1,43 +1,23 @@
-#ifndef A4F2D5F6_5370_484D_A727_F15C776309C6
-#define A4F2D5F6_5370_484D_A727_F15C776309C6
+#pragma once
+
+#include "SFML/System.hpp"
 
 namespace mapping {
 
-// For returning multiple numbers
-struct domain {
-    double first;
-    double second;
-};
-
-// Multiply domain by scale
-domain operator*(const domain& l_dom, const double& r);
-
-// Multiply domain scale
-domain operator*(const domain& l_dom, const domain& r_dom);
-
-// Divide domain by scale
-domain operator/(const domain& l_dom, const double& r);
-
-// Divide domain scale
-domain operator/(const domain& l_dom, const domain& r_dom);
-
 // {0, 1}
 // Converts a value to it's normalized equivalent
-double map_to_normal(double value, double min, double max);
+float map_to_normal(float value, float min, float max);
 
 // {0, 1}, {0, 1}
 // Converts a domain/coordinate to it's normalized equivalent
-domain map_to_normal(double x, double min_x, double max_x,double y, double min_y, double max_y);
+sf::Vector2f map_to_normal(float x, float min_x, float max_x,float y, float min_y, float max_y);
 
 // Converts a normalized value to some scale
-double map_to_raster(double value, double scale);
+float map_to_raster(float value, float scale);
 
 // Converts a normalized domain/coordinate to a given scale
-domain map_to_raster(double x, double scale_x, double y, double scale_y);
+sf::Vector2f map_to_raster(float x, float scale_x, float y, float scale_y);
 
-domain map_to_raster(domain dom, double scale_x, double scale_y);
+sf::Vector2f map_to_raster(sf::Vector2f dom, float scale_x, float scale_y);
 
 } // namespace mapping
-
-
-#endif /* A4F2D5F6_5370_484D_A727_F15C776309C6 */

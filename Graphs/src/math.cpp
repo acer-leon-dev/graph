@@ -8,13 +8,17 @@ namespace math {
 Graph::Graph(sf::Vector2<number> d, unsigned int intervals, number (*func)(number))
 : m_domain(d)
 {
-    number dif = std::abs((d.y - d.x) / intervals);
     m_graph.reserve(intervals);
-    for (number x = d.x; x < d.y - dif / 10; x += dif) {
+    
+    number dif = std::abs((d.y - d.x) / intervals);
+    for (number x = d.x; x < d.y - dif / 10; x += dif)
+    {
         number y = func(x);
-        m_range = {std::min(m_range.x, y), std::max(m_range.y, y)};
+        m_range.x = std::min(m_range.x, y);
+        m_range.y = std::max(m_range.y, y);
         m_graph.emplace_back(x, y);
     }
+    
     m_graph.emplace_back(d.y, func(d.y));
 }
 
@@ -32,7 +36,8 @@ void Graph::update(sf::Vector2<number> d, unsigned int intervals, number (*func)
     m_graph.emplace_back(d.y, func(d.y));
 }
 
-void Graph::print() {
+void Graph::print()
+{
     std::cout << "x: ";
     for (sf::Vector2<number> p : m_graph)
     {
@@ -66,15 +71,18 @@ void Graph::print() {
     }
 }
 
-const std::vector<sf::Vector2<number>>& Graph::get_data() {
+const std::vector<sf::Vector2<number>>& Graph::get_data()
+{
     return m_graph;
 }
 
-sf::Vector2<number> Graph::get_domain() {
+sf::Vector2<number> Graph::get_domain()
+{
     return m_domain;
 }
 
-sf::Vector2<number> Graph::get_range() {
+sf::Vector2<number> Graph::get_range()
+{
     return m_range;
 }
 
