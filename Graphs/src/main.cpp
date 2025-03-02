@@ -22,11 +22,16 @@ struct SCREEN
     static inline constexpr float TICK = 1.0f / FPS;
 };
  
-sf::Vector2f mapPointToScreen(const sf::Vector2f& point, const sf::Vector2f& domain, const sf::Vector2f& range, float width, float height)
+float inverselerp(float x, float a, float b)
+{
+    return (x - a) / (b - a);
+}
+
+sf::Vector2f scalePoint(const sf::Vector2f& point, const sf::Vector2f& domain, const sf::Vector2f& range, float width, float height)
 {
     return {
-        width * point.x / (domain.y - domain.x), 
-        height * (-1 * point.y / (range.y - range.x) + .5f)
+        width * inverselerp(point.x, domain.x, domain.y), 
+        height * inverselerp(point.y, range.x, range.y)
     };
 }
 
@@ -37,11 +42,11 @@ std::vector<sf::Vector2f> mapGraphToScreenAndGetData(math::Graph& g)
     res.reserve(points.size());
     for (const auto& p : points)
     {
-        res.push_back(mapPointToScreen(
+        res.push_back(scalePoint(
             static_cast<sf::Vector2f>(p), 
             static_cast<sf::Vector2f>(g.get_domain()), 
             static_cast<sf::Vector2f>(g.get_range()),
-            800, 600
+            SCREEN::WIDTH, SCREEN::HEIGHT
         ));
     }
     return res;
@@ -54,16 +59,21 @@ math::number exampleFunction(math::number x)
 
 int main(int argc, char* argv[])
 {
-    // Create the main window
+    // Create the main window and a timer
     sf::RenderWindow window(sf::VideoMode({SCREEN::WIDTH, SCREEN::HEIGHT}), "Graphs");
     FrameTimer timer;
 
     // Create graph object
-    math::number low = -2 * math::constant::pi;
-    math::number high = 2 * math::constant::pi;
+    math::number low = -4 * math::constant::pi;
+    math::number high = 4 * math::constant::pi;
     math::Graph graph{{low, high}, 500, exampleFunction};
-    auto newPoints = mapGraphToScreenAndGetData(graph);
     
+    // Create lines object to represent graph
+    Lines lines{mapGraphToScreenAndGetData(graph)};
+    lines.setColor(sf::Color(0x4452f2));
+    lines.setAntialiased(true);
+    lines.setThickness(3);
+
     while (window.isOpen()) {
         ///// Handling Events
         while (const std::optional event = window.pollEvent()) {
@@ -76,8 +86,8 @@ int main(int argc, char* argv[])
         window.clear();
         
         // Draw graph
-        drawLines(window, newPoints);
-
+        // drawLines(window, sf::Color(0xFFFFFFFF), 5, false, newPoints);
+        window.draw(lines);
 
         //// Misc
 

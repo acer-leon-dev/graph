@@ -33,16 +33,18 @@ sf::Color _adjust_opacity(const sf::Color& c, float opacity)
     return newc;
 }
 
-void _draw_pixel(sf::RenderWindow& window, sf::Vertex p)
+void _draw_pixel(sf::RenderTarget& target, sf::Vertex p)
 {
     sf::RectangleShape pixel{{1, 1}};
     pixel.setFillColor(p.color);
     pixel.setPosition(p.position);
-    window.draw(pixel);
+    target.draw(pixel);
 }
 
-void _draw_line_AA(sf::RenderWindow& window, sf::Vector2f p1, sf::Vector2f p2, sf::Color c, int thickness)
+void _draw_line_AA(sf::RenderTarget& target, sf::Vector2f p1, sf::Vector2f p2, sf::Color c)
 {
+    // Xaolin Wu's Line Drawing Algorithm
+
     float x0 = p1.x;
     float x1 = p2.x;
     float y0 = p1.y;
@@ -83,13 +85,13 @@ void _draw_line_AA(sf::RenderWindow& window, sf::Vector2f p1, sf::Vector2f p2, s
     
     if (steep)
     {
-        _draw_pixel(window, {{ypxl1, xpxl1}, _adjust_opacity(c, _rfpart(yend) * xgap)});
-        _draw_pixel(window, {{ypxl1+1, xpxl1}, _adjust_opacity(c, _fpart(yend) * xgap)});
+        _draw_pixel(target, {{ypxl1, xpxl1}, _adjust_opacity(c, _rfpart(yend) * xgap)});
+        _draw_pixel(target, {{ypxl1+1, xpxl1}, _adjust_opacity(c, _fpart(yend) * xgap)});
     }
     else 
     {
-        _draw_pixel(window, {{xpxl1, ypxl1}, _adjust_opacity(c, _rfpart(yend) * xgap)});
-        _draw_pixel(window, {{xpxl1, ypxl1 + 1}, _adjust_opacity(c, _fpart(yend) * xgap)});
+        _draw_pixel(target, {{xpxl1, ypxl1}, _adjust_opacity(c, _rfpart(yend) * xgap)});
+        _draw_pixel(target, {{xpxl1, ypxl1 + 1}, _adjust_opacity(c, _fpart(yend) * xgap)});
     }
 
     float intery = yend + gradient; // first y-intersection for the main loop
@@ -103,13 +105,13 @@ void _draw_line_AA(sf::RenderWindow& window, sf::Vector2f p1, sf::Vector2f p2, s
 
     if (steep)
     {
-        _draw_pixel(window, {{ypxl2, xpxl2}, _adjust_opacity(c, _rfpart(yend) * xgap)});
-        _draw_pixel(window, {{ypxl2 + 1, xpxl2}, _adjust_opacity(c, _fpart(yend) * xgap)});
+        _draw_pixel(target, {{ypxl2, xpxl2}, _adjust_opacity(c, _rfpart(yend) * xgap)});
+        _draw_pixel(target, {{ypxl2 + 1, xpxl2}, _adjust_opacity(c, _fpart(yend) * xgap)});
     }
     else
     {
-        _draw_pixel(window, {{xpxl2, ypxl2}, _adjust_opacity(c, _rfpart(yend) * xgap)});
-        _draw_pixel(window, {{xpxl2, ypxl2 + 1}, _adjust_opacity(c, _fpart(yend) * xgap)});
+        _draw_pixel(target, {{xpxl2, ypxl2}, _adjust_opacity(c, _rfpart(yend) * xgap)});
+        _draw_pixel(target, {{xpxl2, ypxl2 + 1}, _adjust_opacity(c, _fpart(yend) * xgap)});
     }
     
     // main loop
@@ -117,8 +119,8 @@ void _draw_line_AA(sf::RenderWindow& window, sf::Vector2f p1, sf::Vector2f p2, s
     {
         for (float x = xpxl1 + 1; x <= xpxl2 - 1; x++)
         {
-            _draw_pixel(window, {{_ipart(intery), x}, _adjust_opacity(c, _fpart(intery))});
-            _draw_pixel(window, {{_ipart(intery) + 1, x}, _adjust_opacity(c, _fpart(intery))});
+            _draw_pixel(target, {{_ipart(intery), x}, _adjust_opacity(c, _fpart(intery))});
+            _draw_pixel(target, {{_ipart(intery) + 1, x}, _adjust_opacity(c, _fpart(intery))});
             intery += gradient;
         }
     }
@@ -126,29 +128,32 @@ void _draw_line_AA(sf::RenderWindow& window, sf::Vector2f p1, sf::Vector2f p2, s
     {
         for (float x = xpxl1 + 1; x <= xpxl2 - 1; x++)
         {
-            _draw_pixel(window, {{x, _ipart(intery)},  _adjust_opacity(c, _fpart(intery))});
-            _draw_pixel(window, {{x, _ipart(intery) + 1}, _adjust_opacity(c, _fpart(intery))});
+            _draw_pixel(target, {{x, _ipart(intery)},  _adjust_opacity(c, _fpart(intery))});
+            _draw_pixel(target, {{x, _ipart(intery) + 1}, _adjust_opacity(c, _fpart(intery))});
             intery += gradient;
         }
     }
 }
 
-void _draw_square(sf::RenderWindow& window, sf::Vector2f pos, sf::Color c, float length)
+void _draw_square(sf::RenderTarget& target, sf::Vector2f pos, sf::Color c, float length)
 {
     sf::RectangleShape square{{length, length}};
     square.setFillColor(c);
     square.setPosition(pos);
-    window.draw(square);
+    target.draw(square);
 }
 
-void _draw_line_noAA(sf::RenderWindow &window, sf::Vector2f p1, sf::Vector2f p2, sf::Color c, int thickness)
+void _draw_line_noAA(sf::RenderTarget& target, sf::Vector2f p1, sf::Vector2f p2, sf::Color c, int thickness)
 {
+    // Bersenham's Line Drawing Algorithm
+
     int x0 = p1.x;
     int y0 = p1.y;
     int x1 = p2.x;
     int y1 = p2.y;
-    int dx = abs(x1 - x0);
+    int dx = std::abs(x1 - x0);
     int sx, sy;
+
     if (x0 < x1)
     {
         sx = 1;
@@ -158,7 +163,7 @@ void _draw_line_noAA(sf::RenderWindow &window, sf::Vector2f p1, sf::Vector2f p2,
         sx = -1;
     }
 
-    int dy = -abs(y1 - y0);
+    int dy = -std::abs(y1 - y0);
     if (y0 < y1)
     {
         sy = 1;
@@ -172,7 +177,7 @@ void _draw_line_noAA(sf::RenderWindow &window, sf::Vector2f p1, sf::Vector2f p2,
 
     while (true)
     {
-        _draw_square(window, {static_cast<float>(x0), static_cast<float>(y0)}, c, thickness);
+        _draw_square(target, {static_cast<float>(x0), static_cast<float>(y0)}, c, thickness);
 
         if (x0 == x1 && y0 == y1)
         {
@@ -195,22 +200,26 @@ void _draw_line_noAA(sf::RenderWindow &window, sf::Vector2f p1, sf::Vector2f p2,
     }
 }
 
-}
+} // [anonymous] namespace
 
-void drawLine(sf::RenderWindow &window, sf::Vector2f point1, sf::Vector2f point2, sf::Color color, int thickness, bool antialiased)
+////////////////////////////////////////////////////////////////////////////////
+
+void drawLine(sf::RenderTarget &target, sf::Vector2f point1, sf::Vector2f point2, sf::Color color, int thickness, bool antialiased)
 {
     if (antialiased)
     {
-        _draw_line_AA(window, point1, point2, color, thickness);
+        _draw_line_AA(target, point1, point2, color);
     }
     else
     {
-        _draw_line_noAA(window, point1, point2, color, thickness);
+        _draw_line_noAA(target, point1, point2, color, thickness);
     }
 
 }
 
-void drawLines(sf::RenderWindow &window, const std::vector<sf::Vector2f>& points)
+////////////////////////////////////////////////////////////////////////////////
+
+void drawLines(sf::RenderTarget &target, sf::Color color, int thickness, bool antialiased, const std::vector<sf::Vector2f>& points)
 {
     int right = 1;
     for (int left = 0; left < points.size() - 1; left++) {
@@ -219,7 +228,72 @@ void drawLines(sf::RenderWindow &window, const std::vector<sf::Vector2f>& points
         //     continue;
         // }
 
-        drawLine(window, points[left], points[right], sf::Color(0x4452f2), 3, true);
+        drawLine(target, points[left], points[right], color, thickness, antialiased);
         right++;
     }
+}
+
+//////////////////////////////////////// class Lines ////////////////////////////////////////
+
+Lines::Lines() 
+:   m_points(), 
+    m_color(sf::Color::Black), 
+    m_thickness(1), 
+    m_antialiased(true)
+{
+
+}
+
+Lines::Lines(const std::vector<sf::Vector2f>& points) 
+:   m_points(points), 
+    m_color(sf::Color::Black), 
+    m_thickness(1), 
+    m_antialiased(true)
+{
+
+}
+
+void Lines::setPoints(const std::vector<sf::Vector2f>& points)
+{
+    m_points = points;
+}
+
+const std::vector<sf::Vector2f>& Lines::getPoints() const
+{
+    return m_points;
+}
+
+void Lines::setColor(sf::Color color)
+{
+    m_color = color;
+}
+
+sf::Color Lines::getColor() const
+{
+    return m_color;
+}
+
+void Lines::setThickness(int thickness)
+{
+    m_thickness = thickness;
+}
+
+int Lines::getThickness() const
+{
+    return m_thickness;
+}
+
+void Lines::setAntialiased(bool antialiased)
+{
+    m_antialiased = antialiased;
+}
+
+bool Lines::getAntialiased() const
+{
+    return m_antialiased;
+}
+
+void Lines::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+    drawLines(target, m_color, m_thickness, m_antialiased, m_points);
 }
