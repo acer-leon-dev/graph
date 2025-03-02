@@ -10,7 +10,6 @@
 #include "SFML/Audio.hpp"
 #include "SFML/Graphics.hpp"
 #include "math.hpp"
-#include "mapping.hpp"
 #include "lines.hpp"
 #include "Timer.hpp"
 
