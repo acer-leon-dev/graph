@@ -93,13 +93,13 @@ int main(int argc, char* argv[])
     // Create graph object
     double low = -4 * math::Constant::pi;
     double high = 4 * math::Constant::pi;
-    math::Graph graph{{low, high}, exampleFunction, 100};
+    math::Graph graph{{low, high}, exampleFunction, 1000};
     
     // Create lines object to represent graph
     Lines lines{mapGraphToScreenAndGetData(graph)};
     lines.setColor(sf::Color(0x4452f2));
-    lines.setAntialiased(false);
-    lines.setThickness(3);
+    lines.setAntialiased(true);
+    lines.setThickness(1);
 
     //
     sf::Text graph_data_text{font, "", 20};
@@ -119,6 +119,14 @@ int main(int argc, char* argv[])
 
             if (auto p_keypress = event->getIf<sf::Event::KeyPressed>())
             {
+                if (p_keypress->scancode == sf::Keyboard::Scancode::Escape)
+                {
+                    window.close();
+                }
+            }
+
+            if (auto p_keypress = event->getIf<sf::Event::KeyPressed>())
+            {
                 if (p_keypress->scancode == sf::Keyboard::Scancode::Up)
                 {
             
@@ -131,18 +139,18 @@ int main(int argc, char* argv[])
 
                 if (p_keypress->scancode == sf::Keyboard::Scancode::Left)
                 {
-                    auto d = graph.getDomain();
+                    auto d = graph.getDomain().componentWiseDiv({1.1, 1.1});
                     auto f = graph.getFunction();
-                    graph.update(d.componentWiseDiv({1.1, 1.1}), f, 100);
+                    graph.update(d, f, 1000);
                     lines.setPoints(mapGraphToScreenAndGetData(graph));
                     updateGraphDataText(graph_data_text, graph);
                 }
 
                 if (p_keypress->scancode == sf::Keyboard::Scancode::Right)
                 {
-                    auto d = graph.getDomain();
+                    auto d = graph.getDomain().componentWiseMul({1.1, 1.1});
                     auto f = graph.getFunction();
-                    graph.update(d.componentWiseMul({1.1, 1.1}), f, 100);
+                    graph.update(d, f, 1000);
                     lines.setPoints(mapGraphToScreenAndGetData(graph));
                     updateGraphDataText(graph_data_text, graph);
                 }
