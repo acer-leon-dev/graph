@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
     // Create lines object to represent graph
     Lines lines{mapGraphToScreenAndGetData(graph)};
     lines.setColor(sf::Color(0x4452f2));
-    lines.setAntialiased(true);
+    lines.setAntialiased(false);
     lines.setThickness(3);
 
     while (window.isOpen()) {
