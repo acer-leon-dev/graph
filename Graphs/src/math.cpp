@@ -22,18 +22,17 @@ Graph::Graph(sf::Vector2<number> d, unsigned int intervals, number (*func)(numbe
     m_graph.emplace_back(d.y, func(d.y));
 }
 
-void Graph::update(sf::Vector2<number> d, unsigned int intervals, number (*func)(number))
+void Graph::update(sf::Vector2<number> domain, unsigned int intervals, number (*func)(number))
 {
-    m_domain = d;
-    number dif = std::abs((d.y - d.x) / intervals);
+    number dx = std::abs((domain.y - domain.x) / intervals);
     int i = 0;
-    for (number x = d.x; x < d.y - dif / 10; x += dif) {
+    for (number x = domain.x; x < domain.y + dx; x += dx) {
         number y = func(x);
         m_range = {std::min(m_range.x, y), std::max(m_range.y, y)};
         m_graph.at(i) = {x, y};
         i++;
     }
-    m_graph.emplace_back(d.y, func(d.y));
+    m_graph.emplace_back(domain.y, func(domain.y));
 }
 
 void Graph::print()

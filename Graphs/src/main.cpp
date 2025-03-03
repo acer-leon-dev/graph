@@ -12,6 +12,7 @@
 #include "math.hpp"
 #include "lines.hpp"
 #include "Timer.hpp"
+#include "systemfont.hpp"
 
 struct SCREEN
 {
@@ -31,7 +32,7 @@ sf::Vector2f scalePoint(const sf::Vector2f& point, const sf::Vector2f& domain, c
 {
     return {
         width * inverselerp(point.x, domain.x, domain.y), 
-        height * inverselerp(point.y, range.x, range.y)
+        height * (1 - inverselerp(point.y, range.x, range.y))
     };
 }
 
@@ -54,7 +55,7 @@ std::vector<sf::Vector2f> mapGraphToScreenAndGetData(math::Graph& g)
 
 math::number exampleFunction(math::number x)
 {
-    return std::sin(x); 
+    return std::tan(x); 
 }
 
 int main(int argc, char* argv[])
@@ -62,11 +63,22 @@ int main(int argc, char* argv[])
     // Create the main window and a timer
     sf::RenderWindow window(sf::VideoMode({SCREEN::WIDTH, SCREEN::HEIGHT}), "Graphs");
     FrameTimer timer;
+    
+    sf::Font font{findSystemFont("arial.ttf")};
+    FpsCounter fpscounter{
+        timer,
+        [&]() {
+            sf::Text t{font};
+            t.setCharacterSize(30);
+            t.setFillColor(sf::Color::White);
+            return t;
+        }()
+    };
 
     // Create graph object
     math::number low = -4 * math::constant::pi;
     math::number high = 4 * math::constant::pi;
-    math::Graph graph{{low, high}, 500, exampleFunction};
+    math::Graph graph{{low, high}, 1000, exampleFunction};
     
     // Create lines object to represent graph
     Lines lines{mapGraphToScreenAndGetData(graph)};
@@ -75,7 +87,7 @@ int main(int argc, char* argv[])
     lines.setThickness(3);
 
     while (window.isOpen()) {
-        ///// Handling Events
+        //// Handling Events
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
                 window.close();
@@ -83,12 +95,18 @@ int main(int argc, char* argv[])
         }
         
         //// Drawing
+
         window.clear();
         
         // Draw graph
+        //  Old Method:
         // drawLines(window, sf::Color(0xFFFFFFFF), 5, false, newPoints);
+        //  New method:
         window.draw(lines);
 
+        fpscounter.update();
+        window.draw(fpscounter);
+        
         //// Misc
 
         window.display();

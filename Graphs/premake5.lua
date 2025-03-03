@@ -2,12 +2,8 @@ project "Graphs"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++23"
-
-    files { 
-        "src/**.h", 
-        "src/**.hpp", 
-        "src/**.cpp"
-    }
+    targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("../bin/obj/" .. outputdir .. "/%{prj.name}")
 
     includedirs {
         "src",
@@ -15,15 +11,18 @@ project "Graphs"
     }
 
     libdirs {
-        "./vendor/SFML3/lib/%{cfg.buildcfg}",
+        LibraryDir["SFML"],
+    }
+
+    files {
+        "src/**.h",
+        "src/**.hpp",
+        "src/**.cpp"
     }
 
     links {
-        SFML_determineLibraries();
+        sfml.determineLibs();
     }
-
-    targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
-    objdir ("../bin/obj/" .. outputdir .. "/%{prj.name}")
 
     filter "toolset:gcc or toolset:clang"
         buildoptions {
@@ -34,6 +33,8 @@ project "Graphs"
     filter "system:windows"
         systemversion "latest"
         defines { "WINDOWS" }
+
+    -- Configurations
 
     filter "configurations:Debug"
         defines { "DEBUG" }

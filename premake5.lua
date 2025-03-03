@@ -7,7 +7,11 @@ workspace "Graph"
 outputdir = "%{cfg.system}-%{cfg.architecture}-%{cfg.buildcfg}"
 
 IncludeDir = {}
-IncludeDir["SFML"] = "%{wks.location}/Graphs/src/vendor/SFML3/include"
+IncludeDir["SFML"] = "%{wks.location}/Graphs/vendor/SFML3/include"
+
+LibraryDir = {}
+LibraryDir["SFML"] = "%{wks.location}/Graphs/vendor/SFML3/lib/%{cfg.buildcfg}"
+
 
 group "Graphs"
    include "Graphs"
