@@ -1,5 +1,9 @@
 # Setup
 
+Only windows is supported
+
+The only tested build system is gcc/mingw
+
 ### Prerequisites:
 - premake5
 
