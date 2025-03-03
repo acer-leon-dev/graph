@@ -1,6 +1,9 @@
-Installation
+# Setup
 
-1. Clone this repo
-2. Set `scripts/setup` as the working directory
-3. Run the appropriate script for your system
-4. Compile 
+### Prerequisites:
+- premake5
+
+### Setup:
+- Clone this repository
+- Set `scripts/setup` to working directory
+- Run the appropriate script for your os/build system
