@@ -3,26 +3,38 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-FrameTimer::FrameTimer() : m_fps(0) {
+FrameTimer::FrameTimer() 
+:   m_dt(0),
+    m_time_last_tick(0),
+    m_counted_frames(0)
+{
     m_tick_clock.start();
     m_counter_clock.start();
 }
 
-void FrameTimer::tick(float seconds)
+void FrameTimer::tick(double seconds)
 {
     while (m_tick_clock.getElapsedTime().asSeconds() < seconds)
     {
 
     }
     
-    m_fps = 1 / m_tick_clock.getElapsedTime().asSeconds();
-    m_tick_clock.restart();
+    // Current time
+    double now = m_tick_clock.getElapsedTime().asSeconds();
+
+    // dt
+    m_dt = now - m_time_last_tick;
+    m_time_last_tick = now;
+    
+    // FPS
     m_counted_frames++;
+
+    m_tick_clock.restart();
 }
 
-float FrameTimer::getFPS()
+double FrameTimer::fps()
 {
-    float calculated_average_fps = m_counted_frames / m_counter_clock.getElapsedTime().asSeconds();
+    double calculated_average_fps = m_counted_frames / m_counter_clock.getElapsedTime().asSeconds();
     
     if (m_counter_clock.getElapsedTime().asSeconds() > .5)
     {
@@ -33,17 +45,22 @@ float FrameTimer::getFPS()
     return calculated_average_fps;
 }
 
+double FrameTimer::dt()
+{
+    return m_dt;
+}
 ////////////////////////////////////////////////////////////////////////////////
 
 FpsCounter::FpsCounter(FrameTimer& timer, const sf::Text& text)
-:   m_timer{timer}, m_text(text)
+:   m_timer{timer}, 
+    m_text(text)
 {
     m_text.setString("0");
 }
 
 void FpsCounter::update()
 {
-    float fps = m_timer.getFPS();
+    double fps = m_timer.fps();
     int rounded = std::round(fps);
     m_text.setString(std::to_string(rounded));
 }

@@ -1,34 +1,30 @@
 #pragma once
-#include <vector>
 #include "SFML/Graphics.hpp"
-
+#include <vector>
+#include <functional>
 namespace math {
 
-typedef double number;
-typedef long long int integer;
-
-struct constant {
-    constant() = delete;
-    static inline constexpr number pi = 3.14159265;
-    static inline constexpr number e = 2.71828183;
+struct Constant {
+    Constant() = delete;
+    static inline constexpr double pi = 3.14159265;
+    static inline constexpr double e = 2.71828183;
 };
 
 class Graph {
 public:
-    Graph(sf::Vector2<number> d, unsigned int intervals, number (*func)(number));
-    void update(sf::Vector2<number> d, unsigned int intervals, number (*func)(number));
+    Graph(sf::Vector2<double> domain, std::function<double(double)> func, unsigned int intervals);
+    void update(sf::Vector2<double> domain, std::function<double(double)> func, unsigned int intervals);
+    
+    const std::vector<sf::Vector2<double>>& getData();    
+    sf::Vector2<double> getDomain();
+    sf::Vector2<double> getRange();
+    std::function<double(double)> getFunction();
 
-    void print();
-    
-    const std::vector<sf::Vector2<number>>& get_data();
-    
-    sf::Vector2<number> get_domain();
-    sf::Vector2<number> get_range();
-    
 private:
-    sf::Vector2<number> m_domain;
-    sf::Vector2<number> m_range;
-    std::vector<sf::Vector2<number>> m_graph;
+    std::vector<sf::Vector2<double>> m_graph;
+    sf::Vector2<double> m_domain;
+    sf::Vector2<double> m_range;
+    std::function<double(double)> m_func;
 };
 
 } // namespace math

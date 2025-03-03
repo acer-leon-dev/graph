@@ -1,7 +1,5 @@
-#include <cmath>
-#include <algorithm>
-
 #include "lines.hpp"
+#include <cmath>
 
 namespace
 {
@@ -24,6 +22,13 @@ float _fpart(int x)
 float _rfpart(int x)
 {
     return 1 - _fpart(x);
+}
+
+void _swap(float& x, float& y)
+{
+    float temp = x;
+    x = y;
+    y = temp;
 }
 
 sf::Color _adjust_opacity(const sf::Color& c, float opacity)
@@ -50,18 +55,18 @@ void _draw_line_AA(sf::RenderTarget& target, sf::Vector2f p1, sf::Vector2f p2, s
     float y0 = p1.y;
     float y1 = p2.y;
     
-    bool steep = std::abs(y1 - y0) > abs(x1 - x0);
+    bool steep = std::abs(y1 - y0) > std::abs(x1 - x0);
 
     if (steep)
     {
-        std::swap(x0, y0);
-        std::swap(x1, y1);
+        _swap(x0, y0);
+        _swap(x1, y1);
     } 
     
     if (x0 > x1) 
     {
-        std::swap(x0, x1);
-        std::swap(y0, y1);
+        _swap(x0, x1);
+        _swap(y0, y1);
     }
     
     float dx = x1 - x0;
@@ -77,7 +82,7 @@ void _draw_line_AA(sf::RenderTarget& target, sf::Vector2f p1, sf::Vector2f p2, s
     }
 
     // handle first endpoint
-    float xend = round(x0);
+    float xend = _round(x0);
     float yend = y0 + gradient * (xend - x0);
     float xgap = _rfpart(x0 + 0.5);
     float xpxl1 = xend; // this will be used in the main loop
@@ -221,8 +226,8 @@ void drawLine(sf::RenderTarget &target, sf::Vector2f point1, sf::Vector2f point2
 
 void drawLines(sf::RenderTarget &target, sf::Color color, int thickness, bool antialiased, const std::vector<sf::Vector2f>& points)
 {
-    int right = 1;
-    for (int left = 0; left < points.size() - 1; left++) {
+    unsigned int right = 1;
+    for (unsigned int left = 0; left < points.size() - 1; left++) {
         // if (std::isnan(points[right].y)) {
         //     right++;
         //     continue;
