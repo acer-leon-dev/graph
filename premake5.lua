@@ -12,7 +12,6 @@ IncludeDir["SFML"] = "%{wks.location}/Graphs/vendor/SFML3/include"
 LibraryDir = {}
 LibraryDir["SFML"] = "%{wks.location}/Graphs/vendor/SFML3/lib/%{cfg.buildcfg}"
 
-
 group "Graphs"
    include "Graphs"
 group ""
