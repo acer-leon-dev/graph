@@ -24,7 +24,7 @@ public:
     double getHeight() const;
 
 private:
-    std::vector<sf::Vector2<double>> m_graph;
+    std::vector<sf::Vector2<double>> m_points;
     sf::Vector2<double> m_domain;
     sf::Vector2<double> m_range;
     std::function<double(double)> m_func;

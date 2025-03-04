@@ -28,7 +28,7 @@ Graph::Graph(sf::Vector2<double> domain, std::function<double(double)> func, uns
     m_range{-10, 10},
     m_func{func}
 {
-    m_graph.reserve(subints);
+    m_points.reserve(subints);
 
     m_range.x = m_func(m_domain.x);
     m_range.y = m_func(m_domain.y);
@@ -41,16 +41,16 @@ Graph::Graph(sf::Vector2<double> domain, std::function<double(double)> func, uns
             double y = m_func(ix);
             m_range.x = std::min(m_range.x, y);
             m_range.y = std::max(m_range.y, y);
-            m_graph.emplace_back(ix, y);
+            m_points.emplace_back(ix, y);
         }
     }
-    m_graph.emplace_back(m_domain.y, m_func(m_domain.y));
+    m_points.emplace_back(m_domain.y, m_func(m_domain.y));
     m_range = _sortInterval(m_range);
 }
 
 void Graph::update(sf::Vector2<double> domain, std::function<double(double)> func, unsigned int subints)
 {
-    m_graph.reserve(subints);
+    m_points.resize(subints);
 
     m_domain = _sortInterval(domain);
     m_func = func;
@@ -66,18 +66,18 @@ void Graph::update(sf::Vector2<double> domain, std::function<double(double)> fun
             double y = func(x);
             m_range.x = std::min(m_range.x, y);
             m_range.y = std::max(m_range.y, y);
-            m_graph.at(i) = {x, y};
+            m_points.at(i) = {x, y};
             i++;
         }
     }
 
-    m_graph.back() = {domain.y, func(domain.y)};
+    m_points.back() = {domain.y, func(domain.y)};
     m_range = _sortInterval(m_range);
 }
 
 const std::vector<sf::Vector2<double>> Graph::getPoints() const
 {
-    return m_graph;
+    return m_points;
 }
 
 sf::Vector2<double> Graph::getDomain() const

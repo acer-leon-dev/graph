@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
     // Create graph object
     double low = -4 * math::Constant::pi;
     double high = 4 * math::Constant::pi;
-    math::Graph graph{{low, high}, exampleFunction, 500};
+    math::Graph graph{{low, high}, exampleFunction, 100};
     
     // for (auto p : graph.getPoints())
     // {
@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
                 {
                     auto d = graph.getDomain().componentWiseDiv({1.1, 1.1});
                     auto f = graph.getFunction();
-                    graph.update(d, f, 250);
+                    graph.update(d, f, 100);
                     linesl.setPoints(pointsToPixels(window, graph));
                     updateGraphDataText(graph_data_text, graph);
                 }
@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
                 {
                     auto d = graph.getDomain().componentWiseMul({1.1, 1.1});
                     auto f = graph.getFunction();
-                    graph.update(d, f, 250);
+                    graph.update(d, f, 100);
                     linesl.setPoints(pointsToPixels(window, graph));
                     updateGraphDataText(graph_data_text, graph);
                 }
