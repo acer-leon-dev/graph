@@ -24,7 +24,7 @@ struct Screen
     static inline constexpr float TICK = 1.0f / FPS;
 };
 
-sf::View getViewFromGraph(const math::Graph& graph)
+sf::View getViewFromGraph(const Graph& graph)
 {
     return {
         {0, 0}, 
@@ -33,12 +33,12 @@ sf::View getViewFromGraph(const math::Graph& graph)
     };
 }
 
-sf::Vector2i graphPointToPixel(sf::RenderTarget& target, const sf::Vector2f& point, const math::Graph& graph)
+sf::Vector2i graphPointToPixel(sf::RenderTarget& target, const sf::Vector2f& point, const Graph& graph)
 {
     return target.mapCoordsToPixel({point.x, point.y * -1}, getViewFromGraph(graph));
 }
 
-template<class T> std::vector<sf::Vector2<T>> pointsToPixels(sf::RenderTarget& target, const math::Graph& graph)
+template<class T> std::vector<sf::Vector2<T>> pointsToPixels(sf::RenderTarget& target, const Graph& graph)
 {
     const auto& points = graph.getPoints();
     std::vector<sf::Vector2<T>> pixels;
@@ -51,7 +51,7 @@ template<class T> std::vector<sf::Vector2<T>> pointsToPixels(sf::RenderTarget& t
     return pixels;
 }
 
-void updateGraphDataText(sf::Text& text, math::Graph& graph)
+void updateGraphDataText(sf::Text& text, Graph& graph)
 {
     double d1 = std::round(graph.getDomain().x * 1000) / 1000;
     double d2 = std::round(graph.getDomain().y * 1000) / 1000;
@@ -68,6 +68,37 @@ double exampleFunction(double x)
 {
     return std::sin(x); 
 }
+
+struct GraphScaler
+{
+public:
+    GraphScaler(Graph& graph, double factor) : graph{graph}, factor{factor}, expanding{false}, shrinking{false}
+    {
+
+    }
+
+    void update() {
+        auto d = graph.getDomain();
+
+        if (expanding)
+        {
+            d = d.componentWiseMul({1.1, 1.1});
+        }
+
+        if (shrinking)
+        {
+            d = d.componentWiseDiv({1.1, 1.1});
+        }
+
+        auto f = graph.getFunction();
+        graph.update(d, f, 250);
+    }
+public:
+    Graph& graph;
+    double factor;
+    bool expanding;
+    bool shrinking;
+};
 
 int main(int argc, char* argv[])
 {
@@ -87,9 +118,9 @@ int main(int argc, char* argv[])
     };
 
     // Create graph object
-    double low = -4 * math::Constant::pi;
-    double high = 4 * math::Constant::pi;
-    math::Graph graph{{low, high}, exampleFunction, 250};
+    double low = -4 * Constant::pi;
+    double high = 4 * Constant::pi;
+    Graph graph{{low, high}, exampleFunction, 250};
     
     // for (auto p : graph.getPoints())
     // {
@@ -127,6 +158,8 @@ int main(int argc, char* argv[])
     sf::Text graph_data_text{font, "", 20};
     updateGraphDataText(graph_data_text, graph);
     graph_data_text.setPosition({0, 20});
+    
+    GraphScaler graph_scaler{graph, 1.1};
 
     // Main loop
     while (window.isOpen())
@@ -161,22 +194,27 @@ int main(int argc, char* argv[])
 
                 if (p_keypress->scancode == sf::Keyboard::Scancode::Left)
                 {
-                    auto d = graph.getDomain().componentWiseDiv({1.1, 1.1});
-                    auto f = graph.getFunction();
-                    graph.update(d, f, 250);
-                    linesl.setPoints(pointsToPixels<float>(window, graph));
-                    updateGraphDataText(graph_data_text, graph);
+                    graph_scaler.shrinking = true;
                 }
 
                 if (p_keypress->scancode == sf::Keyboard::Scancode::Right)
                 {
-                    auto d = graph.getDomain().componentWiseMul({1.1, 1.1});
-                    auto f = graph.getFunction();
-                    graph.update(d, f, 250);
-                    linesl.setPoints(pointsToPixels<float>(window, graph));
-                    updateGraphDataText(graph_data_text, graph);
+                    graph_scaler.expanding = true;
                 }
             } 
+
+            if (auto p_keypress = event->getIf<sf::Event::KeyReleased>())
+            {
+                if (p_keypress->scancode == sf::Keyboard::Scancode::Left)
+                {
+                    graph_scaler.shrinking = false;
+                }
+
+                if (p_keypress->scancode == sf::Keyboard::Scancode::Right)
+                {
+                    graph_scaler.expanding = false;
+                }
+            }
         }
         
         //// Drawing
@@ -190,6 +228,10 @@ int main(int argc, char* argv[])
         window.draw(fpscounter);
         window.draw(graph_data_text);
         
+        graph_scaler.update();
+        linesl.setPoints(pointsToPixels<float>(window, graph));
+        updateGraphDataText(graph_data_text, graph);
+
         //// Misc
 
         window.display();

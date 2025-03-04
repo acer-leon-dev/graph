@@ -2,7 +2,6 @@
 #include "SFML/Graphics.hpp"
 #include <vector>
 #include <functional>
-namespace math {
 
 struct Constant {
     Constant() = delete;
@@ -30,5 +29,3 @@ private:
     sf::Vector2<double> m_range;
     std::function<double(double)> m_func;
 };
-
-} // namespace math

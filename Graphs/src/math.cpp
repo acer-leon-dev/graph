@@ -13,8 +13,6 @@ namespace
     }
 }
 
-namespace math {
-
 Graph::Graph()
 :   m_domain{-10, 10},
     m_range{-10, 10},
@@ -36,17 +34,8 @@ Graph::Graph(sf::Vector2<double> domain, std::function<double(double)> func, uns
     if (subints != 0)
     {  
         double dx = std::abs((m_domain.y - m_domain.x) / subints);
-
-        // for (int i = 0; i < m_points.size(); i++)
-        // {
-        //     double x = i * dx;
-        //     double y = func(x);
-        //     m_range.x = std::min(m_range.x, y);
-        //     m_range.y = std::max(m_range.y, y);
-        //     m_points.emplace_back(x, y);
-        // }
         
-        for (double x = m_domain.x; x < m_domain.y; x += dx)
+        for (double x = m_domain.x; x <= m_domain.y; x += dx)
         {
             double y = m_func(x);
             m_range.x = std::min(m_range.x, y);
@@ -81,14 +70,13 @@ void Graph::update(sf::Vector2<double> domain, std::function<double(double)> fun
         //     m_points.at(i) = {x, y};
         // }
 
-        int i = 0;
+        int i = -1;
         for (double x = domain.x; x < domain.y; x += dx) {
+            i++;
             double y = func(x);
             m_range.x = std::min(m_range.x, y);
             m_range.y = std::max(m_range.y, y);
             m_points.at(i) = {x, y};
-            // std::sort(m_points.begin(), m_points.end(), [](sf::Vector2<double> f, sf::Vector2<double> s){ return f.x < s.x; });
-            i++;
         }
     }
 
@@ -130,6 +118,3 @@ int Graph::getSubintervals() const
 {
     return m_points.size() - 1;
 }
-
-
-} // namespace math
