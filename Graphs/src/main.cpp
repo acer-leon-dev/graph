@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
     // Create graph object
     double low = -4 * math::Constant::pi;
     double high = 4 * math::Constant::pi;
-    math::Graph graph{{low, high}, exampleFunction, 100};
+    math::Graph graph{{low, high}, exampleFunction, 50};
     
     // for (auto p : graph.getPoints())
     // {

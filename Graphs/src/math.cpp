@@ -28,7 +28,7 @@ Graph::Graph(sf::Vector2<double> domain, std::function<double(double)> func, uns
     m_range{-10, 10},
     m_func{func}
 {
-    m_points.reserve(subints);
+    m_points.reserve(subints + 1);
 
     m_range.x = m_func(m_domain.x);
     m_range.y = m_func(m_domain.y);
@@ -36,12 +36,22 @@ Graph::Graph(sf::Vector2<double> domain, std::function<double(double)> func, uns
     if (subints != 0)
     {  
         double dx = std::abs((m_domain.y - m_domain.x) / subints);
-        for (double ix = m_domain.x; ix < m_domain.y; ix += dx)
+
+        // for (int i = 0; i < m_points.size(); i++)
+        // {
+        //     double x = i * dx;
+        //     double y = func(x);
+        //     m_range.x = std::min(m_range.x, y);
+        //     m_range.y = std::max(m_range.y, y);
+        //     m_points.emplace_back(x, y);
+        // }
+        
+        for (double x = m_domain.x; x < m_domain.y; x += dx)
         {
-            double y = m_func(ix);
+            double y = m_func(x);
             m_range.x = std::min(m_range.x, y);
             m_range.y = std::max(m_range.y, y);
-            m_points.emplace_back(ix, y);
+            m_points.emplace_back(x, y);
         }
     }
     m_points.emplace_back(m_domain.y, m_func(m_domain.y));
@@ -50,7 +60,7 @@ Graph::Graph(sf::Vector2<double> domain, std::function<double(double)> func, uns
 
 void Graph::update(sf::Vector2<double> domain, std::function<double(double)> func, unsigned int subints)
 {
-    m_points.resize(subints);
+    m_points.resize(subints + 1);
 
     m_domain = _sortInterval(domain);
     m_func = func;
@@ -61,12 +71,23 @@ void Graph::update(sf::Vector2<double> domain, std::function<double(double)> fun
     if (subints != 0)
     {
         double dx = std::abs((domain.y - domain.x) / subints);
+        
+        // for (int i = 0; i < m_points.size(); i++)
+        // {
+        //     double x = i * dx;
+        //     double y = func(x);
+        //     m_range.x = std::min(m_range.x, y);
+        //     m_range.y = std::max(m_range.y, y);
+        //     m_points.at(i) = {x, y};
+        // }
+
         int i = 0;
         for (double x = domain.x; x < domain.y; x += dx) {
             double y = func(x);
             m_range.x = std::min(m_range.x, y);
             m_range.y = std::max(m_range.y, y);
             m_points.at(i) = {x, y};
+            // std::sort(m_points.begin(), m_points.end(), [](sf::Vector2<double> f, sf::Vector2<double> s){ return f.x < s.x; });
             i++;
         }
     }
