@@ -12,13 +12,16 @@ struct Constant {
 
 class Graph {
 public:
+    Graph();
     Graph(sf::Vector2<double> domain, std::function<double(double)> func, unsigned int intervals);
     void update(sf::Vector2<double> domain, std::function<double(double)> func, unsigned int intervals);
     
-    const std::vector<sf::Vector2<double>>& getData();    
-    sf::Vector2<double> getDomain();
-    sf::Vector2<double> getRange();
-    std::function<double(double)> getFunction();
+    const std::vector<sf::Vector2<double>> getPoints() const; 
+    sf::Vector2<double> getDomain() const;
+    sf::Vector2<double> getRange() const;
+    std::function<double(double)> getFunction() const;
+    double getWidth() const;
+    double getHeight() const;
 
 private:
     std::vector<sf::Vector2<double>> m_graph;

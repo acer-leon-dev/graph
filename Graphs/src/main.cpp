@@ -11,7 +11,7 @@
 #include "SFML/Audio.hpp"
 #include "SFML/Graphics.hpp"
 #include "math.hpp"
-#include "lines.hpp"
+#include "Lines.hpp"
 #include "Timer.hpp"
 #include "systemfont.hpp"
 
@@ -23,37 +23,33 @@ struct Screen
     static inline constexpr int FPS = 60;
     static inline constexpr float TICK = 1.0f / FPS;
 };
- 
-float inverselerp(float x, float a, float b)
-{
-    return (x - a) / (b - a);
-}
 
-sf::Vector2f pointToScreen(const sf::Vector2f& point, const sf::Vector2f& domain, const sf::Vector2f& range, sf::Vector2f screensize)
+sf::View getViewFromGraph(const math::Graph& graph)
 {
     return {
-        screensize.x * inverselerp(point.x, domain.x, domain.y), 
-        screensize.y * (1 - inverselerp(point.y, range.x, range.y))
+        {0, 0}, 
+        { static_cast<float>(graph.getWidth()),
+        static_cast<float>(graph.getHeight()) }
     };
 }
 
-std::vector<sf::Vector2f> mapGraphToScreenAndGetData(math::Graph& g)
+template<class T> sf::Vector2<T> graphPointToPixel(sf::RenderTarget& target, const sf::Vector2<T>& point, const math::Graph& graph)
 {
-    std::vector<sf::Vector2f> res;
-    const auto& points = g.getData();
-    res.reserve(points.size());
-    for (sf::Vector2<double> p : points)
-    {
-        sf::Vector2f newp = pointToScreen(
-            static_cast<sf::Vector2f>(p), 
-            static_cast<sf::Vector2f>(g.getDomain()), 
-            static_cast<sf::Vector2f>(g.getRange()),
-            Screen::SIZE
-        );
+    return static_cast<sf::Vector2<T>>(target.mapCoordsToPixel({point.x, point.y * -1}, getViewFromGraph(graph)));
+}
 
-        res.push_back(newp);
+
+std::vector<sf::Vector2f> pointsToPixels(sf::RenderTarget& target, const math::Graph& graph)
+{
+    const auto& points = graph.getPoints();
+    std::vector<sf::Vector2f> pixels;
+    pixels.reserve(points.size());
+    for (sf::Vector2<double> point : points)
+    {
+        sf::Vector2f newp = static_cast<sf::Vector2f>(graphPointToPixel(target, static_cast<sf::Vector2f>(point), graph));
+        pixels.push_back(newp);
     }
-    return res;
+    return pixels;
 }
 
 void updateGraphDataText(sf::Text& text, math::Graph& graph)
@@ -93,13 +89,39 @@ int main(int argc, char* argv[])
     // Create graph object
     double low = -4 * math::Constant::pi;
     double high = 4 * math::Constant::pi;
-    math::Graph graph{{low, high}, exampleFunction, 1000};
+    math::Graph graph{{low, high}, exampleFunction, 500};
+    
+    // for (auto p : graph.getPoints())
+    // {
+    //     std::cout << "{" << p.x << ", " << p.y << "} ";
+    // }
+
     
     // Create lines object to represent graph
-    Lines lines{mapGraphToScreenAndGetData(graph)};
-    lines.setColor(sf::Color(0x4452f2));
-    lines.setAntialiased(true);
-    lines.setThickness(1);
+    LinesLegacy linesl{pointsToPixels(window, graph)};
+    linesl.setColor(sf::Color(0x4452f2));
+    linesl.setAntialiased(false);
+    linesl.setWeight(1);
+    
+    
+    // Lines lines{
+    //     static_cast<sf::Vector2i>(graph.getDomain()), 
+    //     static_cast<sf::Vector2i>(graph.getRange())
+    // };
+    // lines.setPoints([&graph](){
+    //     const std::vector<sf::Vector2<double>>& pointsf = graph.getPoints(); 
+    //     std::vector<sf::Vector2i> pointsi;
+    //     pointsi.reserve(pointsf.size());
+        
+    //     for (auto p : pointsf)
+    //     {
+    //         pointsi.push_back(static_cast<sf::Vector2i>(p));
+    //     }
+    
+    //     return pointsi;
+    // }());
+    // lines.setColor(sf::Color(0x0abf00ff));
+    // lines.setWeight(3);
 
     //
     sf::Text graph_data_text{font, "", 20};
@@ -141,8 +163,8 @@ int main(int argc, char* argv[])
                 {
                     auto d = graph.getDomain().componentWiseDiv({1.1, 1.1});
                     auto f = graph.getFunction();
-                    graph.update(d, f, 1000);
-                    lines.setPoints(mapGraphToScreenAndGetData(graph));
+                    graph.update(d, f, 250);
+                    linesl.setPoints(pointsToPixels(window, graph));
                     updateGraphDataText(graph_data_text, graph);
                 }
 
@@ -150,8 +172,8 @@ int main(int argc, char* argv[])
                 {
                     auto d = graph.getDomain().componentWiseMul({1.1, 1.1});
                     auto f = graph.getFunction();
-                    graph.update(d, f, 1000);
-                    lines.setPoints(mapGraphToScreenAndGetData(graph));
+                    graph.update(d, f, 250);
+                    linesl.setPoints(pointsToPixels(window, graph));
                     updateGraphDataText(graph_data_text, graph);
                 }
             } 
@@ -161,12 +183,9 @@ int main(int argc, char* argv[])
 
         window.clear();
         
-        // Draw graph
-        //  Old Method:
-        // drawLines(window, sf::Color(0xFFFFFFFF), 5, false, newPoints);
-        //  New method:
-        window.draw(lines);
-
+        window.draw(linesl);
+        // window.draw(lines);
+        
         fpscounter.update();
         window.draw(fpscounter);
         window.draw(graph_data_text);
