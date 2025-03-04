@@ -33,20 +33,19 @@ sf::View getViewFromGraph(const math::Graph& graph)
     };
 }
 
-template<class T> sf::Vector2<T> graphPointToPixel(sf::RenderTarget& target, const sf::Vector2<T>& point, const math::Graph& graph)
+sf::Vector2i graphPointToPixel(sf::RenderTarget& target, const sf::Vector2f& point, const math::Graph& graph)
 {
-    return static_cast<sf::Vector2<T>>(target.mapCoordsToPixel({point.x, point.y * -1}, getViewFromGraph(graph)));
+    return target.mapCoordsToPixel({point.x, point.y * -1}, getViewFromGraph(graph));
 }
 
-
-std::vector<sf::Vector2f> pointsToPixels(sf::RenderTarget& target, const math::Graph& graph)
+template<class T> std::vector<sf::Vector2<T>> pointsToPixels(sf::RenderTarget& target, const math::Graph& graph)
 {
     const auto& points = graph.getPoints();
-    std::vector<sf::Vector2f> pixels;
+    std::vector<sf::Vector2<T>> pixels;
     pixels.reserve(points.size());
     for (sf::Vector2<double> point : points)
     {
-        sf::Vector2f newp = static_cast<sf::Vector2f>(graphPointToPixel(target, static_cast<sf::Vector2f>(point), graph));
+        sf::Vector2<T> newp = static_cast<sf::Vector2<T>>(graphPointToPixel(target, static_cast<sf::Vector2f>(point), graph));
         pixels.push_back(newp);
     }
     return pixels;
@@ -58,9 +57,10 @@ void updateGraphDataText(sf::Text& text, math::Graph& graph)
     double d2 = std::round(graph.getDomain().y * 1000) / 1000;
     double r1 = std::round(graph.getRange().x * 1000) / 1000;
     double r2 = std::round(graph.getRange().y * 1000) / 1000;
+    int subints = graph.getSubintervals();
     text.setString(std::format(
-        "Dom: {{{}, {}}}\nRan: {{{}, {}}}", 
-        d1, d2, r1, r2)
+        "Dom: {{{}, {}}}\nRan: {{{}, {}}}\nSubints: {}", 
+        d1, d2, r1, r2, subints)
     );
 }
 
@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
     // Create graph object
     double low = -4 * math::Constant::pi;
     double high = 4 * math::Constant::pi;
-    math::Graph graph{{low, high}, exampleFunction, 50};
+    math::Graph graph{{low, high}, exampleFunction, 250};
     
     // for (auto p : graph.getPoints())
     // {
@@ -98,7 +98,7 @@ int main(int argc, char* argv[])
 
     
     // Create lines object to represent graph
-    LinesLegacy linesl{pointsToPixels(window, graph)};
+    LinesLegacy linesl{pointsToPixels<float>(window, graph)};
     linesl.setColor(sf::Color(0x4452f2));
     linesl.setAntialiased(false);
     linesl.setWeight(1);
@@ -163,8 +163,8 @@ int main(int argc, char* argv[])
                 {
                     auto d = graph.getDomain().componentWiseDiv({1.1, 1.1});
                     auto f = graph.getFunction();
-                    graph.update(d, f, 100);
-                    linesl.setPoints(pointsToPixels(window, graph));
+                    graph.update(d, f, 250);
+                    linesl.setPoints(pointsToPixels<float>(window, graph));
                     updateGraphDataText(graph_data_text, graph);
                 }
 
@@ -172,8 +172,8 @@ int main(int argc, char* argv[])
                 {
                     auto d = graph.getDomain().componentWiseMul({1.1, 1.1});
                     auto f = graph.getFunction();
-                    graph.update(d, f, 100);
-                    linesl.setPoints(pointsToPixels(window, graph));
+                    graph.update(d, f, 250);
+                    linesl.setPoints(pointsToPixels<float>(window, graph));
                     updateGraphDataText(graph_data_text, graph);
                 }
             } 

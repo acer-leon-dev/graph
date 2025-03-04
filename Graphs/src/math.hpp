@@ -22,6 +22,7 @@ public:
     std::function<double(double)> getFunction() const;
     double getWidth() const;
     double getHeight() const;
+    int getSubintervals() const;
 
 private:
     std::vector<sf::Vector2<double>> m_points;

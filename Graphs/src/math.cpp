@@ -126,5 +126,10 @@ double Graph::getHeight() const
     return std::abs(m_range.y - m_range.x);
 }
 
+int Graph::getSubintervals() const
+{
+    return m_points.size() - 1;
+}
+
 
 } // namespace math
