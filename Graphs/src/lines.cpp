@@ -183,7 +183,6 @@ void _writeLineAAOFFToArray(uint8_t* pixelarray, sf::Vector2u p1, sf::Vector2u p
     Bresenham gen{static_cast<sf::Vector2i>(p1), static_cast<sf::Vector2i>(p2)};
     do {
         sf::Vector2u point = static_cast<sf::Vector2u>(gen());
-        point.y *= -1;
         sf::IntRect rect{static_cast<sf::Vector2i>(point), {weight, weight}};
         _writeRectangleToArray(pixelarray, rect, c);
     } while (gen.next());
