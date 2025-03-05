@@ -157,40 +157,42 @@ void _drawLineAAOFFToTarget(sf::RenderTarget& target, sf::Vector2f p1, sf::Vecto
     } while (gen.next());
 }
 
-uint8_t& _accessPixelArrayPart(std::vector<uint8_t>& pixelarray, int pixelarraywidth, int x, int y)
+uint8_t& _accessPixelArrayPart(uint8_t* pixelarray, sf::Vector2u pixelarraysize, int x, int y, int part)
 {
-    return pixelarray.at(y * pixelarraywidth + x);
+    // i*length*width + j*width + k
+    return pixelarray[part + 4 * (x + pixelarraysize.x * y)];
+    // return pixelarray[y * pixelarraywidth * 4 + x];
 }
 
-void _writeRectangleToArray(std::vector<uint8_t>& pixels, sf::IntRect rect, sf::Color c)
+void _writeRectangleToArray(uint8_t* pixelarray, sf::IntRect rect, sf::Color c)
 {
     for (int y = rect.position.y; y < rect.position.y + rect.size.y; y++)
     {
         for (int x = rect.position.x; x < rect.position.x + rect.size.y; x++)
         {
-            _accessPixelArrayPart(pixels, rect.size.x, y, x)     = c.r;
-            _accessPixelArrayPart(pixels, rect.size.x, y, x + 1) = c.g;
-            _accessPixelArrayPart(pixels, rect.size.x, y, x + 2) = c.b;
-            _accessPixelArrayPart(pixels, rect.size.x, y, x + 3) = c.a;
+            _accessPixelArrayPart(pixelarray, static_cast<sf::Vector2u>(rect.size), x, y, 0) = c.r;
+            _accessPixelArrayPart(pixelarray, static_cast<sf::Vector2u>(rect.size), x, y, 1) = c.g;
+            _accessPixelArrayPart(pixelarray, static_cast<sf::Vector2u>(rect.size), x, y, 2) = c.b;
+            _accessPixelArrayPart(pixelarray, static_cast<sf::Vector2u>(rect.size), x, y, 3) = c.a;
         }
     }
 }
 
-void _writeLineAAOFFToArray(std::vector<uint8_t>& pixels, sf::Vector2u p1, sf::Vector2u p2, sf::Color c, int weight)
+void _writeLineAAOFFToArray(uint8_t* pixelarray, sf::Vector2u p1, sf::Vector2u p2, sf::Color c, int weight)
 {
     // Bersenham's Line Drawing Algorithm
     Bresenham gen{static_cast<sf::Vector2i>(p1), static_cast<sf::Vector2i>(p2)};
     do {
         sf::Vector2u point = static_cast<sf::Vector2u>(gen());
-        sf::IntRect rect = {static_cast<sf::Vector2i>(point), {weight, weight}};
-        _writeRectangleToArray(pixels, rect, c);
+        sf::IntRect rect{static_cast<sf::Vector2i>(point), {weight, weight}};
+        _writeRectangleToArray(pixelarray, rect, c);
     } while (gen.next());
 }
 
-void _writeLinesAAOFFToArray(std::vector<uint8_t>& pixels_out, const std::vector<sf::Vector2u>& points_in, sf::Color color, int weight)
+void _writeLinesAAOFFToArray(uint8_t* pixelarray, const std::vector<sf::Vector2u>& points, sf::Color color, int weight)
 {
-    for (unsigned int left = 0; left < points_in.size() - 1; left++) {
-        _writeLineAAOFFToArray(pixels_out, points_in[left], points_in[left + 1], color, weight);
+    for (unsigned int left = 0; left < points.size() - 1; left++) {
+        _writeLineAAOFFToArray(pixelarray, points[left], points[left + 1], color, weight);
     }
 }
 
@@ -295,7 +297,6 @@ Lines::Lines(sf::Texture& texture, const std::vector<sf::Vector2u>& points)
     // m_antialiased{false},
     m_pixels(m_width * m_height * 4, 0)
 {
-    updateTexture();
 }
 
 
@@ -306,8 +307,9 @@ sf::Texture& Lines::getTexture()
 
 void Lines::updateTexture()
 {
-    _writeLinesAAOFFToArray(m_pixels, m_points, m_color, m_weight);
-    m_texture.update(m_pixels.data());
+    uint8_t* ptr_pixelarray = m_pixels.data();
+    _writeLinesAAOFFToArray(ptr_pixelarray, m_points, m_color, m_weight);
+    m_texture.update(ptr_pixelarray);
 }
 
 void Lines::setPoints(const std::vector<sf::Vector2u>& points)

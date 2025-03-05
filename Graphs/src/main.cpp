@@ -14,7 +14,7 @@ struct Screen
     static inline constexpr int WIDTH = 1600;
     static inline constexpr int HEIGHT = 900;
     static inline constexpr sf::Vector2f SIZE{WIDTH, HEIGHT};
-    static inline constexpr int FPS = 60;
+    static inline constexpr int FPS = 120;
     static inline constexpr float TICK = 1.0f / FPS;
 };
 
@@ -34,13 +34,14 @@ sf::Vector2i graphPointToPixel(sf::RenderTarget& target, const sf::Vector2f& poi
 
 template<class T> std::vector<sf::Vector2<T>> pointsToPixels(sf::RenderTarget& target, const Graph& graph)
 {
-    const auto& points = graph.getPoints();
-    std::vector<sf::Vector2<T>> pixels;
-    pixels.reserve(points.size());
+    const std::vector<sf::Vector2<double>>& in_points = graph.getPoints();
+    std::vector<sf::Vector2<T>> out_pixels;
+
+    out_pixels.reserve(in_points.size());
     std::transform(
-        points.begin(), points.end(),
-        std::back_inserter(pixels),
-        [&](auto value) { 
+        in_points.begin(), in_points.end(),
+        std::back_inserter(out_pixels),
+        [&](sf::Vector2<double> value) { 
             return static_cast<sf::Vector2<T>>(
                 graphPointToPixel(
                     target, 
@@ -48,18 +49,10 @@ template<class T> std::vector<sf::Vector2<T>> pointsToPixels(sf::RenderTarget& t
                     graph
                 )
             ); 
-        }
-            
+        }      
     );
 
-    
-    // for (sf::Vector2<double> point : points)
-    // {
-    //     sf::Vector2<T> newp = static_cast<sf::Vector2<T>>(graphPointToPixel(target, static_cast<sf::Vector2f>(point), graph));
-    //     pixels.push_back(newp);
-    // }
-
-    return pixels;
+    return out_pixels;
 }
 
 void updateGraphDataText(sf::Text& text, Graph& graph)
@@ -79,7 +72,6 @@ double exampleFunction(double x)
 {
     return std::sin(x); 
 }
-
 
 struct GraphScaler
 {
@@ -124,7 +116,7 @@ public:
             subints = std::round(subints + subint_change);
         }
         if (subints_decreasing) {
-            subints = std::round(subints - subint_change);
+            subints = std::max(1.0, std::round(subints - subint_change));
         }
 
         graph.update(domain, function, subints);
@@ -165,32 +157,20 @@ int main(int argc, char* argv[])
     Graph graph{{low, high}, exampleFunction, 250};
     
     // Create lines object to represent graph
-    LinesLegacy linesl{pointsToPixels<float>(window, graph)};
-    linesl.setColor(sf::Color(0x4452f2));
-    linesl.setAntialiased(false);
-    linesl.setWeight(1);
+    // LinesLegacy linesl{pointsToPixels<float>(window, graph)};
+    // linesl.setColor(sf::Color(0x4452f2));
+    // linesl.setAntialiased(false);
+    // linesl.setWeight(1);
     
+    sf::Texture tex_lines{window.getSize()};
+    Lines lines{tex_lines, pointsToPixels<unsigned int>(window, graph)};
+    lines.setColor(sf::Color(0x0abf00ff));
+    lines.setWeight(3);
+    lines.updateTexture();
+    sf::Sprite spr_lines{tex_lines};
+    // std::vector<uint8_t> buff(tex_lines.getSize().x * tex_lines.getSize().x * 4, 128);
+    // tex_lines.update(buff.data());
     
-    // Lines lines{
-    //     static_cast<sf::Vector2i>(graph.getDomain()), 
-    //     static_cast<sf::Vector2i>(graph.getRange())
-    // };
-    // lines.setPoints([&graph](){
-    //     const std::vector<sf::Vector2<double>>& pointsf = graph.getPoints(); 
-    //     std::vector<sf::Vector2i> pointsi;
-    //     pointsi.reserve(pointsf.size());
-        
-    //     for (auto p : pointsf)
-    //     {
-    //         pointsi.push_back(static_cast<sf::Vector2i>(p));
-    //     }
-    
-    //     return pointsi;
-    // }());
-    // lines.setColor(sf::Color(0x0abf00ff));
-    // lines.setWeight(3);
-
-    //
     sf::Text graph_data_text{gfont, "", 20};
     updateGraphDataText(graph_data_text, graph);
     graph_data_text.setPosition({0, 20});
@@ -231,12 +211,12 @@ int main(int argc, char* argv[])
 
                 if (p_keypress->scancode == sf::Keyboard::Scancode::Up)
                 {
-                    graph_scaler.range_increasing = true;
+                    graph_scaler.subints_increasing = true;
                 }
 
                 if (p_keypress->scancode == sf::Keyboard::Scancode::Down)
                 {
-                    graph_scaler.range_decreasing = true;
+                    graph_scaler.subints_decreasing = true;
                 }
             } 
 
@@ -254,28 +234,30 @@ int main(int argc, char* argv[])
 
                 if (p_keypress->scancode == sf::Keyboard::Scancode::Up)
                 {
-                    graph_scaler.range_increasing = false;
+                    graph_scaler.subints_increasing = false;
                 }
 
                 if (p_keypress->scancode == sf::Keyboard::Scancode::Down)
                 {
-                    graph_scaler.range_decreasing = false;
+                    graph_scaler.subints_decreasing = false;
                 }
             }
         }
         
         fpscounter.update();
         graph_scaler.update(graph);
-        linesl.setPoints(pointsToPixels<float>(window, graph));
         updateGraphDataText(graph_data_text, graph);
+        // linesl.setPoints(pointsToPixels<float>(window, graph));
+        lines.setPoints(pointsToPixels<unsigned int>(window, graph));
+        lines.updateTexture();
         
         //// Drawing
 
         window.clear();
         
-        window.draw(linesl);
-        // window.draw(lines);
-
+        // window.draw(linesl);
+        
+        window.draw(spr_lines);
         window.draw(fpscounter);
         window.draw(graph_data_text);        
 

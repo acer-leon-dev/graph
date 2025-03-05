@@ -52,7 +52,7 @@ public:
     // bool getAntialiased() const;
 private:
     // bool m_antialiased;
-    sf::Texture m_texture;
+    sf::Texture& m_texture;
     sf::Color m_color;
     int m_weight;
 
