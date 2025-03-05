@@ -12,7 +12,7 @@ FrameTimer::FrameTimer()
     m_counter_clock.start();
 }
 
-void FrameTimer::tick(double seconds)
+double FrameTimer::tick(double seconds)
 {
     while (m_tick_clock.getElapsedTime().asSeconds() < seconds)
     {
@@ -30,6 +30,8 @@ void FrameTimer::tick(double seconds)
     m_counted_frames++;
 
     m_tick_clock.restart();
+
+    return m_dt;
 }
 
 double FrameTimer::fps()
@@ -49,6 +51,7 @@ double FrameTimer::dt()
 {
     return m_dt;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 
 FpsCounter::FpsCounter(FrameTimer& timer, const sf::Text& text)

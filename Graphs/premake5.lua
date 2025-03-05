@@ -5,6 +5,9 @@ project "Graphs"
     targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
     objdir ("../bin/obj/" .. outputdir .. "/%{prj.name}")
 
+    pchheader "pch.hpp"
+    pchsource "pch.cpp"
+
     includedirs {
         "src",
         IncludeDir["SFML"],

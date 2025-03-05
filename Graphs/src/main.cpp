@@ -1,16 +1,10 @@
-#include <cmath>
-#include <iostream>
-#include <string>
+#include "pch.hpp"
+
 #include <vector>
-#include <utility>
-#include <limits>
-#include <iterator>
-#include <algorithm>
 #include <format>
 
-#include "SFML/Audio.hpp"
-#include "SFML/Graphics.hpp"
-#include "math.hpp"
+#include "Generators.hpp"
+#include "Graph.hpp"
 #include "Lines.hpp"
 #include "Timer.hpp"
 #include "systemfont.hpp"
@@ -43,11 +37,28 @@ template<class T> std::vector<sf::Vector2<T>> pointsToPixels(sf::RenderTarget& t
     const auto& points = graph.getPoints();
     std::vector<sf::Vector2<T>> pixels;
     pixels.reserve(points.size());
-    for (sf::Vector2<double> point : points)
-    {
-        sf::Vector2<T> newp = static_cast<sf::Vector2<T>>(graphPointToPixel(target, static_cast<sf::Vector2f>(point), graph));
-        pixels.push_back(newp);
-    }
+    std::transform(
+        points.begin(), points.end(),
+        std::back_inserter(pixels),
+        [&](auto value) { 
+            return static_cast<sf::Vector2<T>>(
+                graphPointToPixel(
+                    target, 
+                    static_cast<sf::Vector2f>(value),
+                    graph
+                )
+            ); 
+        }
+            
+    );
+
+    
+    // for (sf::Vector2<double> point : points)
+    // {
+    //     sf::Vector2<T> newp = static_cast<sf::Vector2<T>>(graphPointToPixel(target, static_cast<sf::Vector2f>(point), graph));
+    //     pixels.push_back(newp);
+    // }
+
     return pixels;
 }
 
@@ -57,7 +68,7 @@ void updateGraphDataText(sf::Text& text, Graph& graph)
     double d2 = std::round(graph.getDomain().y * 1000) / 1000;
     double r1 = std::round(graph.getRange().x * 1000) / 1000;
     double r2 = std::round(graph.getRange().y * 1000) / 1000;
-    int subints = graph.getSubintervals();
+    int subints = graph.getSubintervals();  
     text.setString(std::format(
         "Dom: {{{}, {}}}\nRan: {{{}, {}}}\nSubints: {}", 
         d1, d2, r1, r2, subints)
@@ -69,35 +80,65 @@ double exampleFunction(double x)
     return std::sin(x); 
 }
 
+
 struct GraphScaler
 {
 public:
-    GraphScaler(Graph& graph, double factor) : graph{graph}, factor{factor}, expanding{false}, shrinking{false}
+    GraphScaler(double domain_factor, double range_factor, double subint_change) 
+    :   domain_factor{domain_factor}, 
+        range_factor{range_factor},
+        subint_change{subint_change},
+        subints_increasing{false},
+        subints_decreasing{false},
+        domain_increasing{false},
+        domain_decreasing{false},
+        range_increasing{false},
+        range_decreasing{false}
     {
 
     }
 
-    void update() {
-        auto d = graph.getDomain();
-
-        if (expanding)
-        {
-            d = d.componentWiseMul({1.1, 1.1});
+    void update(Graph& graph) 
+    {
+        // Domain
+        auto domain = graph.getDomain();
+        if (domain_increasing) {
+            domain = domain.componentWiseMul({domain_factor, domain_factor});
+        }
+        if (domain_decreasing) {
+            domain = domain.componentWiseDiv({domain_factor, domain_factor});
         }
 
-        if (shrinking)
-        {
-            d = d.componentWiseDiv({1.1, 1.1});
+        // Range
+        auto function = graph.getFunction();
+        if (range_increasing) {
+            function = [=](double x){ return function(x) * domain_factor; };
+        }
+        if (range_decreasing) {
+            function = [=](double x){ return function(x) / domain_factor; };
         }
 
-        auto f = graph.getFunction();
-        graph.update(d, f, 250);
+        // Subints
+        int subints = graph.getSubintervals();
+        if (subints_increasing) {
+            subints = std::round(subints + subint_change);
+        }
+        if (subints_decreasing) {
+            subints = std::round(subints - subint_change);
+        }
+
+        graph.update(domain, function, subints);
     }
 public:
-    Graph& graph;
-    double factor;
-    bool expanding;
-    bool shrinking;
+    double domain_factor;
+    double range_factor;
+    double subint_change;
+    bool subints_increasing;
+    bool subints_decreasing;
+    bool domain_increasing;
+    bool domain_decreasing;
+    bool range_increasing;
+    bool range_decreasing;
 };
 
 int main(int argc, char* argv[])
@@ -105,12 +146,13 @@ int main(int argc, char* argv[])
     // Create the main window and a timer
     sf::RenderWindow window(sf::VideoMode({Screen::WIDTH, Screen::HEIGHT}), "Graphs");
     FrameTimer timer;
-    
-    sf::Font font{findSystemFont("arial.ttf")};
+    double deltatime;
+
+    sf::Font gfont{findSystemFont("arial.ttf")};
     FpsCounter fpscounter{
         timer,
         [&]() {
-            sf::Text t{font};
+            sf::Text t{gfont};
             t.setCharacterSize(20);
             t.setFillColor(sf::Color::White);
             return t;
@@ -121,12 +163,6 @@ int main(int argc, char* argv[])
     double low = -4 * Constant::pi;
     double high = 4 * Constant::pi;
     Graph graph{{low, high}, exampleFunction, 250};
-    
-    // for (auto p : graph.getPoints())
-    // {
-    //     std::cout << "{" << p.x << ", " << p.y << "} ";
-    // }
-
     
     // Create lines object to represent graph
     LinesLegacy linesl{pointsToPixels<float>(window, graph)};
@@ -155,11 +191,11 @@ int main(int argc, char* argv[])
     // lines.setWeight(3);
 
     //
-    sf::Text graph_data_text{font, "", 20};
+    sf::Text graph_data_text{gfont, "", 20};
     updateGraphDataText(graph_data_text, graph);
     graph_data_text.setPosition({0, 20});
     
-    GraphScaler graph_scaler{graph, 1.1};
+    GraphScaler graph_scaler{1.1, 1.1, 1};
 
     // Main loop
     while (window.isOpen())
@@ -182,24 +218,25 @@ int main(int argc, char* argv[])
 
             if (auto p_keypress = event->getIf<sf::Event::KeyPressed>())
             {
-                if (p_keypress->scancode == sf::Keyboard::Scancode::Up)
-                {
-            
-                }
-
-                if (p_keypress->scancode == sf::Keyboard::Scancode::Down)
-                {
-                    
-                }
 
                 if (p_keypress->scancode == sf::Keyboard::Scancode::Left)
                 {
-                    graph_scaler.shrinking = true;
+                    graph_scaler.domain_decreasing = true;
                 }
 
                 if (p_keypress->scancode == sf::Keyboard::Scancode::Right)
                 {
-                    graph_scaler.expanding = true;
+                    graph_scaler.domain_increasing = true;
+                }
+
+                if (p_keypress->scancode == sf::Keyboard::Scancode::Up)
+                {
+                    graph_scaler.range_increasing = true;
+                }
+
+                if (p_keypress->scancode == sf::Keyboard::Scancode::Down)
+                {
+                    graph_scaler.range_decreasing = true;
                 }
             } 
 
@@ -207,15 +244,30 @@ int main(int argc, char* argv[])
             {
                 if (p_keypress->scancode == sf::Keyboard::Scancode::Left)
                 {
-                    graph_scaler.shrinking = false;
+                    graph_scaler.domain_decreasing = false;
                 }
 
                 if (p_keypress->scancode == sf::Keyboard::Scancode::Right)
                 {
-                    graph_scaler.expanding = false;
+                    graph_scaler.domain_increasing = false;
+                }
+
+                if (p_keypress->scancode == sf::Keyboard::Scancode::Up)
+                {
+                    graph_scaler.range_increasing = false;
+                }
+
+                if (p_keypress->scancode == sf::Keyboard::Scancode::Down)
+                {
+                    graph_scaler.range_decreasing = false;
                 }
             }
         }
+        
+        fpscounter.update();
+        graph_scaler.update(graph);
+        linesl.setPoints(pointsToPixels<float>(window, graph));
+        updateGraphDataText(graph_data_text, graph);
         
         //// Drawing
 
@@ -223,19 +275,14 @@ int main(int argc, char* argv[])
         
         window.draw(linesl);
         // window.draw(lines);
-        
-        fpscounter.update();
+
         window.draw(fpscounter);
-        window.draw(graph_data_text);
-        
-        graph_scaler.update();
-        linesl.setPoints(pointsToPixels<float>(window, graph));
-        updateGraphDataText(graph_data_text, graph);
+        window.draw(graph_data_text);        
 
         //// Misc
 
         window.display();
         
-        timer.tick(Screen::TICK);
+        deltatime = timer.tick(Screen::TICK);
     }
 }

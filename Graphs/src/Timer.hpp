@@ -8,7 +8,7 @@ class FrameTimer
 {
 public:
     FrameTimer();
-    void tick(double seconds);
+    double tick(double seconds);
     double fps();
     double dt();
 private:

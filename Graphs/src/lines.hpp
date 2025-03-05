@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
+#include "pch.hpp"
 
 void drawLine(sf::RenderTarget& target, sf::Vector2f point1, sf::Vector2f point2, sf::Color color, int weight, bool antialiased = true);
 void drawLines(sf::RenderTarget& target, sf::Color color, int weight, bool antialiased, const std::vector<sf::Vector2f>& points);

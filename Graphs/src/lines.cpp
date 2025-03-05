@@ -1,6 +1,4 @@
 #include "Lines.hpp"
-#include <algorithm>
-#include <cmath>
 
 namespace
 {
