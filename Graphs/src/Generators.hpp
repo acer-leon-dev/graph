@@ -2,24 +2,29 @@
 
 #include "pch.hpp"
 
+////////////////////////////////////////////////////////////
+/// \brief Generator for Bersenham's Line Drawing Algorithm
+////////////////////////////////////////////////////////////
 class Bresenham
 {
 public:
-    Bresenham(sf::Vector2i, sf::Vector2i);
+    Bresenham(const sf::Vector2i& p1, const sf::Vector2i& p2);
 
     sf::Vector2i operator() () const;
     sf::Vector2i operator*() const;
     bool atEnd() const;
-    Bresenham& next();
-    Bresenham& prev();
+    bool next();
+    bool prev();
     Bresenham& operator ++ ();
     Bresenham operator ++ (int);
     Bresenham& operator -- ();
     Bresenham operator -- (int);
 
 private:
-    void m_next();
-    void m_prev();
+    void m_advance_next();
+    void m_advance_prev();
+    bool m_at_end() const;
+    bool m_not_at_end() const;
 
     int m_x0;
     int m_y0;

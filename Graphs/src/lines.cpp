@@ -1,4 +1,5 @@
 #include "Lines.hpp"
+#include "Generators.hpp"
 
 namespace
 {
@@ -150,58 +151,13 @@ void _draw_square(sf::RenderTarget& target, sf::Vector2f pos, sf::Color c, float
 void _draw_line_noAA(sf::RenderTarget& target, sf::Vector2f p1, sf::Vector2f p2, sf::Color c, int weight)
 {
     // Bersenham's Line Drawing Algorithm
-
-    int x0 = p1.x;
-    int y0 = p1.y;
-    int x1 = p2.x;
-    int y1 = p2.y;
-    int dx = std::abs(x1 - x0);
-    int sx, sy;
-
-    if (x0 < x1)
+    Bresenham gen{static_cast<sf::Vector2i>(p1), static_cast<sf::Vector2i>(p2)};
+    do
     {
-        sx = 1;
-    }
-    else
-    {
-        sx = -1;
-    }
-
-    if (y0 < y1)
-    {
-        sy = 1;
-    }
-    else
-    {
-        sy = -1;
-    }
-
-    int dy = -std::abs(y1 - y0);
-    int err = dx + dy;
-
-    while (true)
-    {
-        _draw_square(target, {static_cast<float>(x0), static_cast<float>(y0)}, c, weight);
-
-        if (x0 == x1 && y0 == y1)
-        {
-            break;
-        }
-
-        int e2 = 2 * err;
-
-        if (e2 >= dy)
-        {
-            err += dy;
-            x0 += sx;
-        }
-
-        if (e2 <= dx)
-        {
-            err += dx;
-            y0 += sy;
-        }
-    }
+        sf::Vector2f point = static_cast<sf::Vector2f>(gen());
+        _draw_square(target, point, c, weight);
+        // std::cout << "{" << point.x << ", " << point.y << "} ";
+    } while (gen.next());
 }
 
 

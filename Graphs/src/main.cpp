@@ -112,10 +112,10 @@ public:
         // Range
         auto function = graph.getFunction();
         if (range_increasing) {
-            function = [=](double x){ return function(x) * domain_factor; };
+            function = [function, this](double x){ return function(x) * domain_factor; };
         }
         if (range_decreasing) {
-            function = [=](double x){ return function(x) / domain_factor; };
+            function = [function, this](double x){ return function(x) / domain_factor; };
         }
 
         // Subints
