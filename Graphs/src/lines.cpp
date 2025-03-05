@@ -38,7 +38,7 @@ sf::Color _adjust_color_opacity(const sf::Color& c, float opacity)
     return newc;
 }
 
-void _draw_pixel(sf::RenderTarget& target, sf::Vertex p)
+void _drawPixelToTarget(sf::RenderTarget& target, sf::Vertex p)
 {
     sf::RectangleShape pixel{{1, 1}};
     pixel.setFillColor(p.color);
@@ -46,7 +46,7 @@ void _draw_pixel(sf::RenderTarget& target, sf::Vertex p)
     target.draw(pixel);
 }
 
-void _draw_line_AA(sf::RenderTarget& target, sf::Vector2f p1, sf::Vector2f p2, sf::Color c)
+void _drawLineAAONToTarget(sf::RenderTarget& target, sf::Vector2f p1, sf::Vector2f p2, sf::Color c)
 {
     // Xaolin Wu's Line Drawing Algorithm
 
@@ -76,8 +76,7 @@ void _draw_line_AA(sf::RenderTarget& target, sf::Vector2f p1, sf::Vector2f p2, s
     if (dx == 0.0) {
         gradient = 1.0;
     }
-    else
-    {
+    else {
         gradient = dy / dx;
     }
 
@@ -90,13 +89,13 @@ void _draw_line_AA(sf::RenderTarget& target, sf::Vector2f p1, sf::Vector2f p2, s
     
     if (steep)
     {
-        _draw_pixel(target, {{ypxl1, xpxl1}, _adjust_color_opacity(c, _rfpart(yend) * xgap)});
-        _draw_pixel(target, {{ypxl1+1, xpxl1}, _adjust_color_opacity(c, _fpart(yend) * xgap)});
+        _drawPixelToTarget(target, {{ypxl1, xpxl1}, _adjust_color_opacity(c, _rfpart(yend) * xgap)});
+        _drawPixelToTarget(target, {{ypxl1+1, xpxl1}, _adjust_color_opacity(c, _fpart(yend) * xgap)});
     }
     else 
     {
-        _draw_pixel(target, {{xpxl1, ypxl1}, _adjust_color_opacity(c, _rfpart(yend) * xgap)});
-        _draw_pixel(target, {{xpxl1, ypxl1 + 1}, _adjust_color_opacity(c, _fpart(yend) * xgap)});
+        _drawPixelToTarget(target, {{xpxl1, ypxl1}, _adjust_color_opacity(c, _rfpart(yend) * xgap)});
+        _drawPixelToTarget(target, {{xpxl1, ypxl1 + 1}, _adjust_color_opacity(c, _fpart(yend) * xgap)});
     }
 
     float intery = yend + gradient; // first y-intersection for the main loop
@@ -110,13 +109,13 @@ void _draw_line_AA(sf::RenderTarget& target, sf::Vector2f p1, sf::Vector2f p2, s
 
     if (steep)
     {
-        _draw_pixel(target, {{ypxl2, xpxl2}, _adjust_color_opacity(c, _rfpart(yend) * xgap)});
-        _draw_pixel(target, {{ypxl2 + 1, xpxl2}, _adjust_color_opacity(c, _fpart(yend) * xgap)});
+        _drawPixelToTarget(target, {{ypxl2, xpxl2}, _adjust_color_opacity(c, _rfpart(yend) * xgap)});
+        _drawPixelToTarget(target, {{ypxl2 + 1, xpxl2}, _adjust_color_opacity(c, _fpart(yend) * xgap)});
     }
     else
     {
-        _draw_pixel(target, {{xpxl2, ypxl2}, _adjust_color_opacity(c, _rfpart(yend) * xgap)});
-        _draw_pixel(target, {{xpxl2, ypxl2 + 1}, _adjust_color_opacity(c, _fpart(yend) * xgap)});
+        _drawPixelToTarget(target, {{xpxl2, ypxl2}, _adjust_color_opacity(c, _rfpart(yend) * xgap)});
+        _drawPixelToTarget(target, {{xpxl2, ypxl2 + 1}, _adjust_color_opacity(c, _fpart(yend) * xgap)});
     }
     
     // main loop
@@ -124,8 +123,8 @@ void _draw_line_AA(sf::RenderTarget& target, sf::Vector2f p1, sf::Vector2f p2, s
     {
         for (float x = xpxl1 + 1; x <= xpxl2 - 1; x++)
         {
-            _draw_pixel(target, {{_ipart(intery), x}, _adjust_color_opacity(c, _fpart(intery))});
-            _draw_pixel(target, {{_ipart(intery) + 1, x}, _adjust_color_opacity(c, _fpart(intery))});
+            _drawPixelToTarget(target, {{_ipart(intery), x}, _adjust_color_opacity(c, _fpart(intery))});
+            _drawPixelToTarget(target, {{_ipart(intery) + 1, x}, _adjust_color_opacity(c, _fpart(intery))});
             intery += gradient;
         }
     }
@@ -133,14 +132,14 @@ void _draw_line_AA(sf::RenderTarget& target, sf::Vector2f p1, sf::Vector2f p2, s
     {
         for (float x = xpxl1 + 1; x <= xpxl2 - 1; x++)
         {
-            _draw_pixel(target, {{x, _ipart(intery)},  _adjust_color_opacity(c, _fpart(intery))});
-            _draw_pixel(target, {{x, _ipart(intery) + 1}, _adjust_color_opacity(c, _fpart(intery))});
+            _drawPixelToTarget(target, {{x, _ipart(intery)},  _adjust_color_opacity(c, _fpart(intery))});
+            _drawPixelToTarget(target, {{x, _ipart(intery) + 1}, _adjust_color_opacity(c, _fpart(intery))});
             intery += gradient;
         }
     }
 }
 
-void _draw_square(sf::RenderTarget& target, sf::Vector2f pos, sf::Color c, float length)
+void _drawSquareToTarget(sf::RenderTarget& target, sf::Vector2f pos, sf::Color c, float length)
 {
     sf::RectangleShape square{{length, length}};
     square.setFillColor(c);
@@ -148,96 +147,50 @@ void _draw_square(sf::RenderTarget& target, sf::Vector2f pos, sf::Color c, float
     target.draw(square);
 }
 
-void _draw_line_noAA(sf::RenderTarget& target, sf::Vector2f p1, sf::Vector2f p2, sf::Color c, int weight)
+void _drawLineAAOFFToTarget(sf::RenderTarget& target, sf::Vector2f p1, sf::Vector2f p2, sf::Color c, int weight)
 {
     // Bersenham's Line Drawing Algorithm
     Bresenham gen{static_cast<sf::Vector2i>(p1), static_cast<sf::Vector2i>(p2)};
-    do
-    {
+    do {
         sf::Vector2f point = static_cast<sf::Vector2f>(gen());
-        _draw_square(target, point, c, weight);
-        // std::cout << "{" << point.x << ", " << point.y << "} ";
+        _drawSquareToTarget(target, point, c, weight);
     } while (gen.next());
 }
 
+uint8_t& _accessPixelArrayPart(std::vector<uint8_t>& pixelarray, int pixelarraywidth, int x, int y)
+{
+    return pixelarray.at(y * pixelarraywidth + x);
+}
 
-void _write_rectangle(std::vector<uint8_t>& pixels, sf::IntRect rect, sf::Color c)
+void _writeRectangleToArray(std::vector<uint8_t>& pixels, sf::IntRect rect, sf::Color c)
 {
     for (int y = rect.position.y; y < rect.position.y + rect.size.y; y++)
     {
         for (int x = rect.position.x; x < rect.position.x + rect.size.y; x++)
         {
-            pixels[y * rect.size.x + x] =     c.r;
-            pixels[y * rect.size.x + x + 1] = c.g;
-            pixels[y * rect.size.x + x + 2] = c.b;
-            pixels[y * rect.size.x + x + 3] = c.a;
+            _accessPixelArrayPart(pixels, rect.size.x, y, x)     = c.r;
+            _accessPixelArrayPart(pixels, rect.size.x, y, x + 1) = c.g;
+            _accessPixelArrayPart(pixels, rect.size.x, y, x + 2) = c.b;
+            _accessPixelArrayPart(pixels, rect.size.x, y, x + 3) = c.a;
         }
     }
 }
 
-void _write_line_noaa_to_array(std::vector<uint8_t>& pixels, sf::Vector2i p1, sf::Vector2i p2, sf::Color c, int weight)
+void _writeLineAAOFFToArray(std::vector<uint8_t>& pixels, sf::Vector2u p1, sf::Vector2u p2, sf::Color c, int weight)
 {
     // Bersenham's Line Drawing Algorithm
-
-    int x0 = p1.x;
-    int y0 = p1.y;
-    int x1 = p2.x;
-    int y1 = p2.y;
-    int dx = std::abs(x1 - x0);
-    int sx, sy;
-
-    if (x0 < x1)
-    {
-        sx = 1;
-    }
-    else
-    {
-        sx = -1;
-    }
-
-    if (y0 < y1)
-    {
-        sy = 1;
-    }
-    else
-    {
-        sy = -1;
-    }
-
-    int dy = -std::abs(y1 - y0);
-    int err = dx + dy;
-
-    while (true)
-    {
-        _write_rectangle(pixels, {{x0, y0}, {weight, weight}}, c);
-
-        if (x0 == x1 && y0 == y1)
-        {
-            break;
-        }
-
-        int e2 = 2 * err;
-
-        if (e2 >= dy)
-        {
-            err += dy;
-            x0 += sx;
-        }
-
-        if (e2 <= dx)
-        {
-            err += dx;
-            y0 += sy;
-        }
-    }
+    Bresenham gen{static_cast<sf::Vector2i>(p1), static_cast<sf::Vector2i>(p2)};
+    do {
+        sf::Vector2u point = static_cast<sf::Vector2u>(gen());
+        sf::IntRect rect = {static_cast<sf::Vector2i>(point), {weight, weight}};
+        _writeRectangleToArray(pixels, rect, c);
+    } while (gen.next());
 }
 
-void _write_lines_noaa_to_array(std::vector<uint8_t>& pixels, sf::Color color, int weight, const std::vector<sf::Vector2i>& points)
+void _writeLinesAAOFFToArray(std::vector<uint8_t>& pixels_out, const std::vector<sf::Vector2u>& points_in, sf::Color color, int weight)
 {
-    unsigned int right = 1;
-    for (unsigned int left = 0; left < points.size() - 1; left++) {
-        _write_line_noaa_to_array(pixels, points[left], points[right], color, weight);
-        right++;
+    for (unsigned int left = 0; left < points_in.size() - 1; left++) {
+        _writeLineAAOFFToArray(pixels_out, points_in[left], points_in[left + 1], color, weight);
     }
 }
 
@@ -247,13 +200,11 @@ void _write_lines_noaa_to_array(std::vector<uint8_t>& pixels, sf::Color color, i
 
 void drawLine(sf::RenderTarget &target, sf::Vector2f point1, sf::Vector2f point2, sf::Color color, int weight, bool antialiased)
 {
-    if (antialiased)
-    {
-        _draw_line_AA(target, point1, point2, color);
+    if (antialiased) {
+        _drawLineAAONToTarget(target, point1, point2, color);
     }
-    else
-    {
-        _draw_line_noAA(target, point1, point2, color, weight);
+    else {
+        _drawLineAAOFFToTarget(target, point1, point2, color, weight);
     }
 
 }
@@ -334,45 +285,37 @@ void LinesLegacy::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 //////////////////////////////////////// class Lines ////////////////////////////////////////
 
-Lines::Lines(sf::Vector2i domain, sf::Vector2i range) 
-:   m_points{}, 
+Lines::Lines(sf::Texture& texture, const std::vector<sf::Vector2u>& points) 
+:   m_texture{texture},
+    m_points{points}, 
     m_color{sf::Color::Black}, 
     m_weight{1}, 
+    m_width{m_texture.getSize().x},
+    m_height{m_texture.getSize().y},
     // m_antialiased{false},
-    m_width{std::abs(domain.y - domain.x)},
-    m_height{std::abs(range.y - range.x)},
-    m_pixels(m_width * m_height * 4, 0),
-    m_texture{{m_width, m_height}},
-    m_sprite{m_texture}
+    m_pixels(m_width * m_height * 4, 0)
 {
-    
+    updateTexture();
 }
 
-Lines::Lines(const std::vector<sf::Vector2i>& points, sf::Vector2i domain, sf::Vector2i range) 
-:   m_points{points},
-    m_color{sf::Color::Black}, 
-    m_weight{1}, 
-    // m_antialiased{false},
-    m_width{std::abs(domain.y - domain.x)},
-    m_height{std::abs(range.y - range.x)},
-    m_pixels(m_width * m_height * 4, 0),
-    m_texture{{m_width, m_height}},
-    m_sprite{m_texture}
+
+sf::Texture& Lines::getTexture()
 {
-    _write_lines_noaa_to_array(m_pixels, m_color, m_weight, m_points);
+    return m_texture;
 }
 
-void Lines::update()
+void Lines::updateTexture()
 {
-    _write_lines_noaa_to_array(m_pixels, m_color, m_weight, m_points);
+    _writeLinesAAOFFToArray(m_pixels, m_points, m_color, m_weight);
+    m_texture.update(m_pixels.data());
 }
 
-void Lines::setPoints(const std::vector<sf::Vector2i>& points)
+void Lines::setPoints(const std::vector<sf::Vector2u>& points)
 {
     m_points = points;
 }
 
-const std::vector<sf::Vector2i>& Lines::getPoints() const
+const std::vector<sf::Vector2u>& Lines::getPoints() const
 {
     return m_points;
 }
@@ -407,7 +350,7 @@ int Lines::getWeight() const
 //     return m_antialiased;
 // }
 
-void Lines::draw(sf::RenderTarget& target, sf::RenderStates states) const
-{
-    target.draw(m_sprite);
-}
+// void Lines::draw(sf::RenderTarget& target, sf::RenderStates states) const
+// {
+//     target.draw(m_sprite);
+// }

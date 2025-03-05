@@ -31,15 +31,16 @@ private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
 
-class Lines : public sf::Drawable
+class Lines // : public sf::Drawable
 {
 public:
-    Lines(sf::Vector2i domain, sf::Vector2i range);
-    Lines(const std::vector<sf::Vector2i>& points, sf::Vector2i domain, sf::Vector2i range);
-    void update();
+    Lines(sf::Texture& texture, const std::vector<sf::Vector2u>& points);
+    void updateTexture();
 
-    void setPoints(const std::vector<sf::Vector2i>& points);
-    const std::vector<sf::Vector2i>& getPoints() const;
+    sf::Texture& getTexture();
+
+    void setPoints(const std::vector<sf::Vector2u>& points);
+    const std::vector<sf::Vector2u>& getPoints() const;
 
     void setColor(sf::Color color);
     sf::Color getColor() const;
@@ -51,15 +52,13 @@ public:
     // bool getAntialiased() const;
 private:
     // bool m_antialiased;
+    sf::Texture m_texture;
     sf::Color m_color;
     int m_weight;
 
-    int m_width;
-    int m_height;
-    std::vector<sf::Vector2i> m_points;
+    unsigned int m_width;
+    unsigned int m_height;
     std::vector<uint8_t> m_pixels;
-    sf::Texture m_texture;
-    sf::Sprite m_sprite;
-
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    std::vector<sf::Vector2u> m_points;
+    // void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
